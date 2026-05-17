@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Land measurement</title>
+    
+    <!-- PWA Links -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+
+    <!-- ਫੋਟੋ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਲਾਇਬ੍ਰੇਰੀ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px 15px; 
+            display: block; 
+        }
+        .container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto; 
+            padding: 25px 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            box-sizing: border-box;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        .shape-selection {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .shape-selection label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .unit-section {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        select, input[type="number"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            outline: none;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        select:focus, input[type="number"]:focus {
+            border-color: #4CAF50;
+        }
+        .karam-setup {
+            display: none;
+            background-color: #f8f9fa;
+            padding: 15px 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #e1e4e8;
+        }
+        .karam-row {
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 5px; 
+            flex-wrap: nowrap; 
+        }
+        .karam-row label {
+            font-weight: bold; 
+            white-space: nowrap; 
+            font-size: 14px;
+        }
+        .karam-row input {
+            width: 70px;
+        }
+        .karam-row select {
+            padding: 10px 5px;
+        }
+        
+        .input-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1; 
+        }
+        .input-box label {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+        
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 110px;
+            background: #fff;
+        }
+        .input-wrapper input {
+            border: none;
+            border-radius: 0;
+            width: 100%;
+            padding: 10px 5px;
+            outline: none;
+        }
+        .extra-sel {
+            border: none;
+            border-left: 1px solid #eee;
+            background: #f8f9fa;
+            padding: 10px 2px;
+            font-size: 12px;
+            border-radius: 0;
+            outline: none;
+            color: #555;
+            cursor: pointer;
+            width: 35px;
+        }
+        .extra-inp {
+            margin-top: 5px;
+            padding: 6px 5px !important;
+            font-size: 13px !important;
+            width: 100%;
+            max-width: 110px;
+            border: 1px dashed #4CAF50 !important;
+            background-color: #f1fdf2;
+        }
+
+        .three-sides-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 5px;
+            align-items: flex-start;
+        }
+        .three-sides-row .input-wrapper, .three-sides-row .extra-inp {
+            max-width: 95px;
+        }
+
+        .link-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            padding: 10px 5px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .link-btn svg { width: 22px; height: 22px; }
+        .link-btn:hover { color: #666; }
+        .link-btn.active { color: #007bff; }
+
+        .button-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            width: 100%;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #ffffff;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .calc-btn {
+            color: #4CAF50;
+            border: 2px solid #4CAF50;
+        }
+        .calc-btn:hover { background-color: #e8f5e9; }
+        
+        .clear-btn {
+            color: #d90000;
+            border: 2px solid #d90000;
+        }
+        .clear-btn:hover { background-color: #fdeaea; }
+
+        #result-box {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: none;
+            text-align: left;
+            color: black;
+            font-size: 16px;
+        }
+        .res-block {
+            border-bottom: 1px dashed #ccc;
+            padding: 12px 0;
+        }
+        .res-block:first-child { padding-top: 0; }
+        .res-block:last-child { border-bottom: none; padding-bottom: 0; }
+        .res-title { font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #333; }
+        .res-item { display: flex; margin-bottom: 5px; padding-left: 5px; }
+        .res-label { width: 110px; font-weight: normal; }
+        .hl { color: #d90000; font-weight: bold; font-size: 17px; }
+
+        #download-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #download-btn:hover { background-color: #0056b3; }
+
+        #receipt-container {
+            position: absolute;
+            left: -9999px; 
+            top: 0;
+            width: 650px; 
+            background-color: #ffffff;
+            padding: 40px;
+            font-family: Arial, sans-serif;
+            color: #000;
+            box-sizing: border-box;
+        }
+        .receipt-header {
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            color: #111;
+        }
+        .receipt-section { margin-bottom: 30px; }
+        .receipt-sec-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            background-color: #f1f1f1;
+            padding: 10px 15px;
+            border-left: 5px solid #4CAF50;
+            margin-bottom: 15px;
+            border-radius: 3px;
+        }
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 17px;
+        }
+        .receipt-res-line {
+            padding: 14px 15px; 
+            border-bottom: 1px solid #eee;
+            font-size: 17px;
+            line-height: 1.6;
+        }
+        .receipt-res-line:last-child { border-bottom: none; }
+        .receipt-hl {
+            color: #d90000;
+            font-weight: bold;
+            font-size: 19px;
+        }
+        .res-space {
+            display: inline-block;
+            margin-left: 35px; 
+        }
+
+        @media (max-width: 400px) {
+            .res-label { width: 90px; }
+            .shape-selection { gap: 10px; font-size: 14px; }
+            .karam-row label { font-size: 13px; }
+            .karam-row input { width: 60px; }
+            .extra-sel { font-size: 10px; padding: 10px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app-container">
+    <h2>Land measurement</h2>
+    
+    <div class="shape-selection">
+        <label>
+            <input type="radio" id="four-sides" name="shape" value="4" checked onchange="toggleInputs(); saveToLocal()">
+            ਚਾਰ ਭੁਜਾਵਾਂ
+        </label>
+        <label>
+            <input type="radio" id="three-sides" name="shape" value="3" onchange="toggleInputs(); saveToLocal()">
+            ਤਿੰਨ ਭੁਜਾਵਾਂ
+        </label>
+    </div>
+
+    <div class="unit-section">
+        <label style="font-weight: bold;">ਯੂਨਿਟ ਚੁਣੋ:</label>
+        <select id="main-unit" onchange="toggleKaramSetup(); saveToLocal()">
+            <option value="foot">ਫੁੱਟ</option>
+            <option value="meter">ਮੀਟਰ</option>
+            <option value="karam">ਕਰਮਾ</option>
+            <option value="inch">ਇੰਚ</option>
+        </select>
+    </div>
+
+    <div id="karam-settings" class="karam-setup">
+        <div class="karam-row">
+            <label>ਇੱਕ ਕਰਮ:</label>
+            <input type="number" id="karam-value" value="5.5" step="any">
+            <select id="karam-unit" onchange="convertKaramValue(); saveToLocal()">
+                <option value="foot">ਫੁੱਟ</option>
+                <option value="inch">ਇੰਚ</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="inputs-container"></div>
+
+    <div class="button-row" id="action-buttons">
+        <button class="action-btn calc-btn" onclick="calculateArea()">ਮਿਣਤੀ ਕਰੋ</button>
+        <button class="action-btn clear-btn" onclick="clearData()">Clear</button>
+    </div>
+
+    <div id="result-box">
+        <div id="result-content">
+            <div class="res-block" id="res-1"></div>
+            <div class="res-block" id="res-2"></div>
+            <div class="res-block" id="res-3"></div>
+            <div class="res-block" id="res-4"></div>
+            <div class="res-block" id="res-5"></div>
+            <div class="res-block" id="res-6"></div>
+            <div class="res-block" id="res-7"></div>
+        </div>
+        <button id="download-btn" onclick="downloadJPG()">JPG ਡਾਊਨਲੋਡ ਕਰੋ</button>
+    </div>
+</div>
+
+<div id="receipt-container"></div>
+
+<script>
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      });
+    }
+
+    let linkL = false;
+    let linkW = false;
+    let currentKaramUnit = 'foot'; 
+    let isLoaded = false;
+    let resData = {}; 
+
+    const linkIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
+
+    function createInputBox(id, label, type, source) {
+        let syncStr = type ? `oninput="syncInputs('${type}', ${source}); saveToLocal()"` : `oninput="saveToLocal()"`;
+        let syncSelStr = type ? `syncInputs('${type}', ${source}); saveToLocal()` : `saveToLocal()`;
+        return `
+            <div class="input-box">
+                <label>${label}</label>
+                <div class="input-wrapper">
+                    <input type="number" id="${id}" step="any" ${syncStr}>
+                    <select class="extra-sel" id="sel_${id}" onchange="toggleExtra('${id}'); ${syncSelStr}">
+                        <option value="">+</option>
+                        <option value="inch">ਇੰਚ</option>
+                        <option value="cm">ਸੈਂ.ਮੀ</option>
+                    </select>
+                </div>
+                <input type="number" id="ext_${id}" class="extra-inp" step="any" style="display:none;" ${syncStr}>
+            </div>
+        `;
+    }
+
+    function toggleExtra(id) {
+        let sel = document.getElementById('sel_' + id);
+        let ext = document.getElementById('ext_' + id);
+        if (sel.value === '') {
+            ext.style.display = 'none';
+            ext.value = ''; 
+        } else {
+            ext.style.display = 'block';
+            ext.placeholder = sel.value === 'inch' ? '+ ਇੰਚ' : '+ ਸੈਂ.ਮੀ';
+        }
+    }
+
+    function toggleInputs() {
+        const shape = document.querySelector('input[name="shape"]:checked').value;
+        const container = document.getElementById('inputs-container');
+        
+        if (shape === '4') {
+            container.innerHTML = `
+                <div class="input-row">
+                    ${createInputBox('l1', 'ਲੰਬਾਈ 1', 'L', 1)}
+                    <button class="link-btn ${linkL ? 'active' : ''}" id="btn-link-l" onclick="toggleLink('L'); saveToLocal()">${linkIcon}</button>
+                    ${createInputBox('l2', 'ਲੰਬਾਈ 2', 'L', 2)}
+                </div>
+                <div class="input-row">
+                    ${createInputBox('w1', 'ਚੌੜਾਈ 1', 'W', 1)}
+                    <button class="link-btn ${linkW ? 'active' : ''}" id="btn-link-w" onclick="toggleLink('W'); saveToLocal()">${linkIcon}</button>
+                    ${createInputBox('w2', 'ਚੌੜਾਈ 2', 'W', 2)}
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="input-row three-sides-row">
+                    ${createInputBox('s1', 'ਪਹਿਲੀ ਭੁਜਾ', '', 0)}
+                    ${createInputBox('s2', 'ਦੂਜੀ ਭੁਜਾ', '', 0)}
+                    ${createInputBox('s3', 'ਤੀਜੀ ਭੁਜਾ', '', 0)}
+                </div>
+            `;
+        }
+    }
+
+    function toggleLink(type) {
+        if (type === 'L') {
+            linkL = !linkL;
+            document.getElementById('btn-link-l').classList.toggle('active', linkL);
+            if (linkL) syncInputs('L', 1);
+        } else {
+            linkW = !linkW;
+            document.getElementById('btn-link-w').classList.toggle('active', linkW);
+            if (linkW) syncInputs('W', 1);
+        }
+    }
+
+    function syncInputs(type, source) {
+        if (type === 'L' && linkL) {
+            let from = source === 1 ? 'l1' : 'l2';
+            let to = source === 1 ? 'l2' : 'l1';
+            document.getElementById(to).value = document.getElementById(from).value;
+            document.getElementById('sel_' + to).value = document.getElementById('sel_' + from).value;
+            toggleExtra(to);
+            document.getElementById('ext_' + to).value = document.getElementById('ext_' + from).value;
+        }
+        if (type === 'W' && linkW) {
+            let from = source === 1 ? 'w1' : 'w2';
+            let to = source === 1 ? 'w2' : 'w1';
+            document.getElementById(to).value = document.getElementById(from).value;
+            document.getElementById('sel_' + to).value = document.getElementById('sel_' + from).value;
+            toggleExtra(to);
+            document.getElementById('ext_' + to).value = document.getElementById('ext_' + from).value;
+        }
+    }
+
+    function convertKaramValue() {
+        const newUnit = document.getElementById('karam-unit').value;
+        const karamInput = document.getElementById('karam-value');
+        let val = parseFloat(karamInput.value);
+        
+        if (!isNaN(val)) {
+            if (currentKaramUnit === 'foot' && newUnit === 'inch') {
+                karamInput.value = parseFloat((val * 12).toFixed(4));
+            } else if (currentKaramUnit === 'inch' && newUnit === 'foot') {
+                karamInput.value = parseFloat((val / 12).toFixed(4));
+            }
+        }
+        currentKaramUnit = newUnit;
+    }
+
+    function toggleKaramSetup() {
+        const unit = document.getElementById('main-unit').value;
+        document.getElementById('karam-settings').style.display = (unit === 'karam') ? 'block' : 'none';
+    }
+
+    function saveToLocal() {
+        if (!isLoaded) return;
+        const data = {
+            shape: document.querySelector('input[name="shape"]:checked').value,
+            mainUnit: document.getElementById('main-unit').value,
+            karamVal: document.getElementById('karam-value').value,
+            karamUnit: document.getElementById('karam-unit').value,
+            linkL: linkL,
+            linkW: linkW
+        };
+        const ids = ['l1', 'l2', 'w1', 'w2', 's1', 's2', 's3'];
+        ids.forEach(id => {
+            if(document.getElementById(id)) {
+                data[id] = document.getElementById(id).value;
+                if(document.getElementById('sel_'+id)) {
+                    data['sel_'+id] = document.getElementById('sel_'+id).value;
+                    data['ext_'+id] = document.getElementById('ext_'+id).value;
+                }
+            }
+        });
+        localStorage.setItem('jaminData', JSON.stringify(data));
+    }
+
+    function loadFromLocal() {
+        const saved = localStorage.getItem('jaminData');
+        if (saved) {
+            const data = JSON.parse(saved);
+            document.querySelector(`input[name="shape"][value="${data.shape}"]`).checked = true;
+            toggleInputs();
+            
+            document.getElementById('main-unit').value = data.mainUnit || 'foot';
+            document.getElementById('karam-value').value = data.karamVal || '5.5';
+            document.getElementById('karam-unit').value = data.karamUnit || 'foot';
+            currentKaramUnit = document.getElementById('karam-unit').value;
+            toggleKaramSetup();
+            
+            linkL = data.linkL || false;
+            linkW = data.linkW || false;
+            if(data.shape === '4') {
+                if(linkL) document.getElementById('btn-link-l').classList.add('active');
+                if(linkW) document.getElementById('btn-link-w').classList.add('active');
+            }
+            
+            const ids = ['l1', 'l2', 'w1', 'w2', 's1', 's2', 's3'];
+            ids.forEach(id => {
+                if(document.getElementById(id) && data[id] !== undefined) {
+                    document.getElementById(id).value = data[id];
+                    if(document.getElementById('sel_'+id) && data['sel_'+id] !== undefined) {
+                        document.getElementById('sel_'+id).value = data['sel_'+id];
+                        toggleExtra(id);
+                        document.getElementById('ext_'+id).value = data['ext_'+id];
+                    }
+                }
+            });
+        } else {
+            toggleInputs();
+        }
+        isLoaded = true;
+    }
+
+    function clearData() {
+        if(confirm("ਕੀ ਤੁਸੀਂ ਸਾਰਾ ਡਾਟਾ ਕਲੀਅਰ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?")) {
+            localStorage.removeItem('jaminData');
+            location.reload();
+        }
+    }
+
+    document.addEventListener('input', saveToLocal);
+
+    function getMultiplierToFeet() {
+        const unit = document.getElementById('main-unit').value;
+        if (unit === 'foot') return 1;
+        if (unit === 'meter') return 3.28084;
+        if (unit === 'inch') return 1 / 12;
+        if (unit === 'karam') {
+            const kVal = parseFloat(document.getElementById('karam-value').value) || 0;
+            const kUnit = document.getElementById('karam-unit').value;
+            if (kUnit === 'foot') return kVal;
+            if (kUnit === 'inch') return kVal / 12;
+        }
+        return 1;
+    }
+
+    function getSideTotalFeet(id, mainMult) {
+        let baseVal = parseFloat(document.getElementById(id).value) || 0;
+        let totalFeet = baseVal * mainMult;
+        
+        let selVal = document.getElementById('sel_' + id).value;
+        let extVal = parseFloat(document.getElementById('ext_' + id).value) || 0;
+        
+        if (selVal === 'inch') {
+            totalFeet += (extVal / 12); 
+        } else if (selVal === 'cm') {
+            totalFeet += (extVal / 30.48); 
+        }
+        return totalFeet;
+    }
+
+    function calculateArea() {
+        const shape = document.querySelector('input[name="shape"]:checked').value;
+        const mult = getMultiplierToFeet();
+        let areaSqFt = 0;
+
+        if (shape === '4') {
+            const l1 = getSideTotalFeet('l1', mult);
+            const l2 = getSideTotalFeet('l2', mult);
+            const w1 = getSideTotalFeet('w1', mult);
+            const w2 = getSideTotalFeet('w2', mult);
+            
+            const avgLength = (l1 + l2) / 2;
+            const avgWidth = (w1 + w2) / 2;
+            areaSqFt = avgLength * avgWidth;
+        } else {
+            const s1 = getSideTotalFeet('s1', mult);
+            const s2 = getSideTotalFeet('s2', mult);
+            const s3 = getSideTotalFeet('s3', mult);
+            
+            if(s1 + s2 > s3 && s2 + s3 > s1 && s1 + s3 > s2) {
+                const s = (s1 + s2 + s3) / 2;
+                areaSqFt = Math.sqrt(s * (s - s1) * (s - s2) * (s - s3));
+            } else {
+                alert("ਗਲਤ ਮਾਪ! ਇਹਨਾਂ ਭੁਜਾਵਾਂ ਨਾਲ ਤਿਕੋਣ ਨਹੀਂ ਬਣ ਸਕਦੀ।");
+                return;
+            }
+        }
+
+        displayResults(areaSqFt);
+    }
+
+    function formatValue(val) {
+        if (Number(val) === 0) return '-';
+        return val;
+    }
+
+    function displayResults(sqFt) {
+        const sqMeter = sqFt * 0.092903;
+        const gaj = sqFt / 9;
+        const hectare = sqMeter / 10000;
+
+        const totalSarsahi = sqFt / 30.25;
+        const totalMarlas = totalSarsahi / 9;
+        const totalKanals = totalMarlas / 20;
+
+        const killas = Math.floor(totalKanals / 8);
+        const remKanals = Math.floor(totalKanals % 8);
+        const remMarlas = Math.floor(totalMarlas % 20);
+        const remSarsahis = (totalSarsahi % 9).toFixed(2);
+
+        const onlyKanals = Math.floor(totalKanals);
+        const onlyMarlas = Math.floor(totalMarlas);
+
+        resData = {
+            killas: formatValue(killas),
+            remKanals: formatValue(remKanals),
+            remMarlas: formatValue(remMarlas),
+            remSarsahis: formatValue(remSarsahis),
+            onlyKanals: formatValue(onlyKanals),
+            onlyMarlas: formatValue(onlyMarlas),
+            sqFt: formatValue(sqFt.toFixed(2)),
+            sqMeter: formatValue(sqMeter.toFixed(2)),
+            gaj: formatValue(gaj.toFixed(2)),
+            hectare: formatValue(hectare.toFixed(4))
+        };
+
+        document.getElementById('res-1').innerHTML = `
+            <div class="res-title">1.</div>
+            <div class="res-item"><span class="res-label">ਕਿੱਲੇ</span> <span class="hl">${resData.killas}</span></div>
+            <div class="res-item"><span class="res-label">ਕਨਾਲਾਂ</span> <span class="hl">${resData.remKanals}</span></div>
+            <div class="res-item"><span class="res-label">ਮਰਲੇ</span> <span class="hl">${resData.remMarlas}</span></div>
+            <div class="res-item"><span class="res-label">ਸਿਰਸਾਹੀਆਂ</span> <span class="hl">${resData.remSarsahis}</span></div>
+        `;
+
+        document.getElementById('res-2').innerHTML = `
+            <div class="res-title">2.</div>
+            <div class="res-item"><span class="res-label">ਕਨਾਲਾਂ</span> <span class="hl">${resData.onlyKanals}</span></div>
+            <div class="res-item"><span class="res-label">ਮਰਲੇ</span> <span class="hl">${resData.remMarlas}</span></div>
+            <div class="res-item"><span class="res-label">ਸਿਰਸਾਹੀਆਂ</span> <span class="hl">${resData.remSarsahis}</span></div>
+        `;
+
+        document.getElementById('res-3').innerHTML = `
+            <div class="res-title">3.</div>
+            <div class="res-item"><span class="res-label">ਮਰਲੇ</span> <span class="hl">${resData.onlyMarlas}</span></div>
+            <div class="res-item"><span class="res-label">ਸਿਰਸਾਹੀਆਂ</span> <span class="hl">${resData.remSarsahis}</span></div>
+        `;
+
+        document.getElementById('res-4').innerHTML = `
+            <div class="res-title">4.</div>
+            <div class="res-item"><span class="res-label">ਸਕੇਅਰ ਫੁੱਟ</span> <span class="hl">${resData.sqFt}</span></div>
+        `;
+
+        document.getElementById('res-5').innerHTML = `
+            <div class="res-title">5.</div>
+            <div class="res-item"><span class="res-label">ਸਕੇਅਰ ਮੀਟਰ</span> <span class="hl">${resData.sqMeter}</span></div>
+        `;
+
+        document.getElementById('res-6').innerHTML = `
+            <div class="res-title">6.</div>
+            <div class="res-item"><span class="res-label">ਗਜ</span> <span class="hl">${resData.gaj}</span></div>
+        `;
+
+        document.getElementById('res-7').innerHTML = `
+            <div class="res-title">7.</div>
+            <div class="res-item"><span class="res-label">ਹੈਕਟੇਅਰ</span> <span class="hl">${resData.hectare}</span></div>
+        `;
+
+        document.getElementById('result-box').style.display = 'block';
+    }
+
+    function downloadJPG() {
+        calculateArea(); 
+        
+        const shape = document.querySelector('input[name="shape"]:checked').value;
+        const mainUnitVal = document.getElementById('main-unit').value;
+        const unitMap = { 'foot': 'ਫੁੱਟ', 'meter': 'ਮੀਟਰ', 'karam': 'ਕਰਮਾਂ', 'inch': 'ਇੰਚ' };
+        const extMap = { 'inch': 'ਇੰਚ', 'cm': 'ਸੈਂ.ਮੀ' };
+        const mUnit = unitMap[mainUnitVal];
+
+        let inputsHTML = '';
+        const formatInp = (id, label) => {
+            let val = document.getElementById(id).value;
+            if(!val) val = '0';
+            let str = `<span class="receipt-hl">${val}</span> ${mUnit}`;
+            
+            let extSel = document.getElementById('sel_'+id);
+            let extVal = document.getElementById('ext_'+id);
+            if(extSel && extSel.value && extVal.value) {
+                str += `<span class="res-space">ਅਤੇ <span class="receipt-hl">${extVal.value}</span> ${extMap[extSel.value]}</span>`;
+            }
+            return `<div class="receipt-row"><span>${label}:</span> <span>${str}</span></div>`;
+        };
+
+        if (shape === '4') {
+            inputsHTML += formatInp('l1', 'ਲੰਬਾਈ 1');
+            inputsHTML += formatInp('l2', 'ਲੰਬਾਈ 2');
+            inputsHTML += formatInp('w1', 'ਚੌੜਾਈ 1');
+            inputsHTML += formatInp('w2', 'ਚੌੜਾਈ 2');
+        } else {
+            inputsHTML += formatInp('s1', 'ਪਹਿਲੀ ਭੁਜਾ');
+            inputsHTML += formatInp('s2', 'ਦੂਜੀ ਭੁਜਾ');
+            inputsHTML += formatInp('s3', 'ਤੀਜੀ ਭੁਜਾ');
+        }
+
+        if(mainUnitVal === 'karam') {
+            let kVal = document.getElementById('karam-value').value;
+            let kUnit = document.getElementById('karam-unit').value === 'foot' ? 'ਫੁੱਟ' : 'ਇੰਚ';
+            inputsHTML += `<div class="receipt-row" style="color:#555; font-size:15px; border-bottom: none;"><span>(1 ਕਰਮ ਦਾ ਸਾਈਜ਼:</span> <span>${kVal} ${kUnit})</span></div>`;
+        }
+
+        const receiptHTML = `
+            <div class="receipt-header">Land measurement - ਵੇਰਵਾ</div>
+            
+            <div class="receipt-section">
+                <div class="receipt-sec-title">ਦਿੱਤੀ ਗਈ ਮਿਣਤੀ (${shape == '4' ? 'ਚਾਰ ਭੁਜਾਵਾਂ' : 'ਤਿੰਨ ਭੁਜਾਵਾਂ'})</div>
+                ${inputsHTML}
+            </div>
+            
+            <div class="receipt-section">
+                <div class="receipt-sec-title">ਮਿਣਤੀ ਦਾ ਨਤੀਜਾ</div>
+                
+                <div class="receipt-res-line">
+                    <b>1.</b> &nbsp;&nbsp;
+                    ਕਿੱਲੇ: <span class="receipt-hl">${resData.killas}</span>
+                    <span class="res-space">ਕਨਾਲਾਂ: <span class="receipt-hl">${resData.remKanals}</span></span>
+                    <span class="res-space">ਮਰਲੇ: <span class="receipt-hl">${resData.remMarlas}</span></span>
+                    <span class="res-space">ਸਿਰਸਾਹੀਆਂ: <span class="receipt-hl">${resData.remSarsahis}</span></span>
+                </div>
+                
+                <div class="receipt-res-line">
+                    <b>2.</b> &nbsp;&nbsp;
+                    ਕੁੱਲ ਕਨਾਲਾਂ: <span class="receipt-hl">${resData.onlyKanals}</span>
+                    <span class="res-space">ਮਰਲੇ: <span class="receipt-hl">${resData.remMarlas}</span></span>
+                    <span class="res-space">ਸਿਰਸਾਹੀਆਂ: <span class="receipt-hl">${resData.remSarsahis}</span></span>
+                </div>
+                
+                <div class="receipt-res-line">
+                    <b>3.</b> &nbsp;&nbsp;
+                    ਕੁੱਲ ਮਰਲੇ: <span class="receipt-hl">${resData.onlyMarlas}</span>
+                    <span class="res-space">ਸਿਰਸਾਹੀਆਂ: <span class="receipt-hl">${resData.remSarsahis}</span></span>
+                </div>
+                
+                <div class="receipt-res-line"><b>4.</b> &nbsp;&nbsp;ਸਕੇਅਰ ਫੁੱਟ: <span class="receipt-hl">${resData.sqFt}</span></div>
+                <div class="receipt-res-line"><b>5.</b> &nbsp;&nbsp;ਸਕੇਅਰ ਮੀਟਰ: <span class="receipt-hl">${resData.sqMeter}</span></div>
+                <div class="receipt-res-line"><b>6.</b> &nbsp;&nbsp;ਗਜ: <span class="receipt-hl">${resData.gaj}</span></div>
+                <div class="receipt-res-line"><b>7.</b> &nbsp;&nbsp;ਹੈਕਟੇਅਰ: <span class="receipt-hl">${resData.hectare}</span></div>
+            </div>
+        `;
+        
+        const printArea = document.getElementById('receipt-container');
+        printArea.innerHTML = receiptHTML;
+
+        html2canvas(printArea, {
+            scale: 2, 
+            backgroundColor: "#ffffff",
+            useCORS: true
+        }).then(canvas => {
+            let link = document.createElement('a');
+            link.download = 'Land-Measure-Result.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        });
+    }
+
+    window.onload = loadFromLocal;
+</script>
+
+</body>
+</html>
