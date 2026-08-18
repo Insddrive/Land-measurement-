@@ -1,11 +1,10 @@
-const CACHE_NAME = 'land-measure-cache-v1';
+const CACHE_NAME = 'land-measure-v1';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
   './icon-192x192.png',
-  './icon-512x512.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+  './icon-512x512.png'
 ];
 
 self.addEventListener('install', event => {
@@ -21,10 +20,11 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
+        // Cache hit - return response
         if (response) {
-          return response; // Return from cache if available
+          return response;
         }
-        return fetch(event.request); // Otherwise fetch from network
+        return fetch(event.request);
       })
   );
 });
