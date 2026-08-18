@@ -77,9 +77,36 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 3px;
             white-space: nowrap;
         }
+
+        /* Custom Radio Buttons styles */
+        .shape-radio {
+            display: none;
+        }
+        .custom-radio {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-square, .icon-triangle {
+            width: 18px;
+            height: 18px;
+            fill: transparent;
+            stroke: #666;
+            stroke-width: 2.5;
+            transition: all 0.2s ease-in-out;
+        }
+        .shape-radio:checked + .custom-radio .icon-square {
+            fill: #007bff;
+            stroke: #007bff;
+        }
+        .shape-radio:checked + .custom-radio .icon-triangle {
+            fill: #007bff;
+            stroke: #007bff;
+        }
+
         .unit-dropdown-wrapper {
             display: flex;
             align-items: center;
@@ -96,6 +123,12 @@
             box-sizing: border-box;
         }
         
+        /* Dropdown unit color change to RED */
+        #main-unit {
+            color: #d90000;
+            font-weight: bold;
+        }
+
         /* Placeholder styling for background unit */
         input[type="number"]::placeholder {
             color: #aaa;
@@ -207,7 +240,7 @@
             align-items: flex-start;
         }
         .three-sides-row .input-wrapper, .three-sides-row .extra-inp {
-            max-width: 100px; /* Space increased slightly due to removed badge */
+            max-width: 100px; 
         }
 
         .link-btn {
@@ -272,7 +305,7 @@
         .res-block:first-child { padding-top: 0; }
         .res-block:last-child { border-bottom: none; padding-bottom: 0; }
         .res-title { font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #333; }
-        .res-item { display: flex; margin-bottom: 5px; padding-left: 5px; }
+        .res-item { display: flex; align-items: center; margin-bottom: 5px; padding-left: 5px; flex-wrap: wrap;}
         .res-label { width: 110px; font-weight: normal; }
         .hl { color: #d90000; font-weight: bold; font-size: 17px; }
 
@@ -348,9 +381,9 @@
         @media (max-width: 400px) {
             .res-label { width: 90px; }
             .top-controls-row { font-size: 13px; gap: 5px; }
-            .top-controls-row label { gap: 3px; }
             .unit-dropdown-wrapper { gap: 3px; }
             .unit-dropdown-wrapper select { padding: 4px; font-size: 13px; }
+            .icon-square, .icon-triangle { width: 14px; height: 14px; stroke-width: 2; }
             .karam-row label { font-size: 13px; }
             .karam-row input { width: 60px; }
             .extra-sel { font-size: 10px; padding: 10px 0; }
@@ -368,13 +401,17 @@
 <div class="container" id="app-container">
     
     <div class="top-controls-row">
+        <!-- Square Custom Radio -->
         <label>
-            <input type="radio" id="four-sides" name="shape" value="4" checked onchange="toggleInputs(); saveToLocal()">
+            <input type="radio" id="four-sides" class="shape-radio" name="shape" value="4" checked onchange="toggleInputs(); saveToLocal()">
+            <span class="custom-radio">
+                <svg class="icon-square" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect></svg>
+            </span>
             ਚਾਰ ਭੁਜਾਵਾਂ
         </label>
         
         <div class="unit-dropdown-wrapper">
-            <label>ਯੂਨਿਟ:</label>
+            <label style="color: #555;">ਯੂਨਿਟ:</label>
             <select id="main-unit" onchange="toggleKaramSetup(); saveToLocal()">
                 <option value="foot">ਫੁੱਟ</option>
                 <option value="meter">ਮੀਟਰ</option>
@@ -383,8 +420,12 @@
             </select>
         </div>
 
+        <!-- Triangle Custom Radio -->
         <label>
-            <input type="radio" id="three-sides" name="shape" value="3" onchange="toggleInputs(); saveToLocal()">
+            <input type="radio" id="three-sides" class="shape-radio" name="shape" value="3" onchange="toggleInputs(); saveToLocal()">
+            <span class="custom-radio">
+                <svg class="icon-triangle" viewBox="0 0 24 24"><polygon points="12,3 22,20 2,20"></polygon></svg>
+            </span>
             ਤਿੰਨ ਭੁਜਾਵਾਂ
         </label>
     </div>
@@ -605,7 +646,7 @@
         ['l1', 'l2', 'w1', 'w2', 's1', 's2', 's3'].forEach(id => {
             const inp = document.getElementById(id);
             if (inp) {
-                inp.placeholder = text; // ਯੂਨਿਟ ਹੁਣ ਡੱਬੇ ਦੇ ਬੈਕਗਰਾਊਂਡ ਵਿੱਚ ਦਿਖੇਗੀ
+                inp.placeholder = text; 
             }
         });
     }
@@ -770,7 +811,11 @@
         const killas = Math.floor(totalKanals / rules.kanalPerKilla);
         const remKanals = Math.floor(totalKanals % rules.kanalPerKilla);
         const remMarlas = Math.floor(totalMarlas % rules.marlaPerKanal);
-        const remSarsahis = (totalSarsahi % rules.sarsahiPerMarla).toFixed(2);
+        const remSarsahisVal = (totalSarsahi % rules.sarsahiPerMarla).toFixed(2);
+
+        // Calculate exact SqFt for remaining Sarsahis
+        const sarsahiInSqFt = (remSarsahisVal * sarsahiSqFt).toFixed(2);
+        const sarsahiSqFtStr = Number(remSarsahisVal) > 0 ? `(${sarsahiInSqFt} ਵਰਗ ਫੁੱਟ)` : '';
 
         const onlyKanals = Math.floor(totalKanals);
         const onlyMarlas = Math.floor(totalMarlas);
@@ -779,7 +824,8 @@
             killas: formatValue(killas),
             remKanals: formatValue(remKanals),
             remMarlas: formatValue(remMarlas),
-            remSarsahis: formatValue(remSarsahis),
+            remSarsahis: formatValue(remSarsahisVal),
+            sarsahiSqFtStr: sarsahiSqFtStr,
             onlyKanals: formatValue(onlyKanals),
             onlyMarlas: formatValue(onlyMarlas),
             sqFt: formatValue(sqFt.toFixed(2)),
@@ -788,25 +834,27 @@
             hectare: formatValue(hectare.toFixed(4))
         };
 
+        const extHTML = `<span style="margin-left: 8px; color: #555; font-size: 14px; font-weight: normal;">${resData.sarsahiSqFtStr}</span>`;
+
         document.getElementById('res-1').innerHTML = `
             <div class="res-title">1.</div>
             <div class="res-item"><span class="res-label">ਕਿੱਲੇ</span> <span class="hl">${resData.killas}</span></div>
             <div class="res-item"><span class="res-label">ਕਨਾਲਾਂ</span> <span class="hl">${resData.remKanals}</span></div>
             <div class="res-item"><span class="res-label">ਮਰਲੇ</span> <span class="hl">${resData.remMarlas}</span></div>
-            <div class="res-item"><span class="res-label">ਸਿਰਸਾਹੀਆਂ</span> <span class="hl">${resData.remSarsahis}</span></div>
+            <div class="res-item"><span class="res-label">ਸਿਰਸਾਹੀਆਂ</span> <span class="hl">${resData.remSarsahis}</span> ${extHTML}</div>
         `;
 
         document.getElementById('res-2').innerHTML = `
             <div class="res-title">2.</div>
             <div class="res-item"><span class="res-label">ਕਨਾਲਾਂ</span> <span class="hl">${resData.onlyKanals}</span></div>
             <div class="res-item"><span class="res-label">ਮਰਲੇ</span> <span class="hl">${resData.remMarlas}</span></div>
-            <div class="res-item"><span class="res-label">ਸਿਰਸਾਹੀਆਂ</span> <span class="hl">${resData.remSarsahis}</span></div>
+            <div class="res-item"><span class="res-label">ਸਿਰਸਾਹੀਆਂ</span> <span class="hl">${resData.remSarsahis}</span> ${extHTML}</div>
         `;
 
         document.getElementById('res-3').innerHTML = `
             <div class="res-title">3.</div>
             <div class="res-item"><span class="res-label">ਮਰਲੇ</span> <span class="hl">${resData.onlyMarlas}</span></div>
-            <div class="res-item"><span class="res-label">ਸਿਰਸਾਹੀਆਂ</span> <span class="hl">${resData.remSarsahis}</span></div>
+            <div class="res-item"><span class="res-label">ਸਿਰਸਾਹੀਆਂ</span> <span class="hl">${resData.remSarsahis}</span> ${extHTML}</div>
         `;
 
         document.getElementById('res-4').innerHTML = `
@@ -872,6 +920,8 @@
             inputsHTML += `<div class="receipt-row" style="color:#555; font-size:15px; border-bottom: none;"><span>(1 ਕਰਮ ਦਾ ਸਾਈਜ਼:</span> <span>${kVal} ${kUnit})</span></div>`;
         }
 
+        const extHTMLRec = `<span style="font-size:14px; color:#555; font-weight:normal;">${resData.sarsahiSqFtStr}</span>`;
+
         const receiptHTML = `
             <div class="receipt-header">Land measurement - ਵੇਰਵਾ</div>
             <div style="text-align:center; margin:-12px 0 20px; color:#555; font-size:16px;"><b>${currentMeasurement === "urban" ? "ਸ਼ਹਿਰੀ ਮਿਣਤੀ" : "ਪੇਂਡੂ ਮਿਣਤੀ"}</b>${currentMeasurement === "urban" ? " — 1 ਮਰਲਾ = 225 ਸਕੇਅਰ ਫੁੱਟ" : ""}</div>
@@ -889,20 +939,20 @@
                     ਕਿੱਲੇ: <span class="receipt-hl">${resData.killas}</span>
                     <span class="res-space">ਕਨਾਲਾਂ: <span class="receipt-hl">${resData.remKanals}</span></span>
                     <span class="res-space">ਮਰਲੇ: <span class="receipt-hl">${resData.remMarlas}</span></span>
-                    <span class="res-space">ਸਿਰਸਾਹੀਆਂ: <span class="receipt-hl">${resData.remSarsahis}</span></span>
+                    <span class="res-space">ਸਿਰਸਾਹੀਆਂ: <span class="receipt-hl">${resData.remSarsahis}</span> ${extHTMLRec}</span>
                 </div>
                 
                 <div class="receipt-res-line">
                     <b>2.</b> &nbsp;&nbsp;
                     ਕੁੱਲ ਕਨਾਲਾਂ: <span class="receipt-hl">${resData.onlyKanals}</span>
                     <span class="res-space">ਮਰਲੇ: <span class="receipt-hl">${resData.remMarlas}</span></span>
-                    <span class="res-space">ਸਿਰਸਾਹੀਆਂ: <span class="receipt-hl">${resData.remSarsahis}</span></span>
+                    <span class="res-space">ਸਿਰਸਾਹੀਆਂ: <span class="receipt-hl">${resData.remSarsahis}</span> ${extHTMLRec}</span>
                 </div>
                 
                 <div class="receipt-res-line">
                     <b>3.</b> &nbsp;&nbsp;
                     ਕੁੱਲ ਮਰਲੇ: <span class="receipt-hl">${resData.onlyMarlas}</span>
-                    <span class="res-space">ਸਿਰਸਾਹੀਆਂ: <span class="receipt-hl">${resData.remSarsahis}</span></span>
+                    <span class="res-space">ਸਿਰਸਾਹੀਆਂ: <span class="receipt-hl">${resData.remSarsahis}</span> ${extHTMLRec}</span>
                 </div>
                 
                 <div class="receipt-res-line"><b>4.</b> &nbsp;&nbsp;ਸਕੇਅਰ ਫੁੱਟ: <span class="receipt-hl">${resData.sqFt}</span></div>
