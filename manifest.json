@@ -1,6 +1,7 @@
 {
-  "name": "Land measurement",
+  "name": "Land Measurement",
   "short_name": "Land Measure",
+  "description": "Punjab Land Measurement Application",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f0f2f5",
