@@ -323,6 +323,69 @@
         }
         #download-btn:hover { background-color: #0056b3; }
 
+        /* Custom Modal / Dialog Box CSS */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-box {
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 320px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .modal-box h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        .modal-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .modal-box input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-btn.cancel {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+        .modal-btn.ok {
+            background-color: #007bff;
+            color: white;
+        }
+
         #receipt-container {
             position: absolute;
             left: -9999px; 
@@ -466,7 +529,19 @@
             <div class="res-block" id="res-6"></div>
             <div class="res-block" id="res-7"></div>
         </div>
-        <button id="download-btn" onclick="downloadJPG()">JPG ਡਾਊਨਲੋਡ ਕਰੋ</button>
+        <button id="download-btn" onclick="openPrompt()">JPG ਡਾਊਨਲੋਡ ਕਰੋ</button>
+    </div>
+</div>
+
+<!-- Custom Prompt Modal -->
+<div id="custom-prompt" class="modal-overlay">
+    <div class="modal-box">
+        <h3>ਵੇਰਵਾ ਭਰੋ:</h3>
+        <input type="text" id="prompt-input" placeholder="ਵੇਰਵਾ ਭਰੋ" />
+        <div class="modal-buttons">
+            <button class="modal-btn cancel" onclick="closePrompt()">Cancel</button>
+            <button class="modal-btn ok" onclick="confirmPrompt()">OK</button>
+        </div>
     </div>
 </div>
 
@@ -813,7 +888,6 @@
         const remMarlas = Math.floor(totalMarlas % rules.marlaPerKanal);
         const remSarsahisVal = (totalSarsahi % rules.sarsahiPerMarla).toFixed(2);
 
-        // Calculate exact SqFt for remaining Sarsahis
         const sarsahiInSqFt = (remSarsahisVal * sarsahiSqFt).toFixed(2);
         const sarsahiSqFtStr = Number(remSarsahisVal) > 0 ? `(${sarsahiInSqFt} ਵਰਗ ਫੁੱਟ)` : '';
 
@@ -880,7 +954,30 @@
         document.getElementById('result-box').style.display = 'block';
     }
 
-    function downloadJPG() {
+    // Modal Control Functions
+    function openPrompt() {
+        document.getElementById('custom-prompt').style.display = 'flex';
+        document.getElementById('prompt-input').value = '';
+        document.getElementById('prompt-input').focus();
+    }
+
+    function closePrompt() {
+        document.getElementById('custom-prompt').style.display = 'none';
+    }
+
+    function confirmPrompt() {
+        let customHeader = document.getElementById('prompt-input').value;
+        closePrompt();
+        processDownload(customHeader);
+    }
+
+    function processDownload(customHeader) {
+        let headerText = customHeader.trim() !== "" ? customHeader : "ਮਿਣਤੀ ਦਾ ਵੇਰਵਾ";
+        
+        // Create filename based on header text
+        let safeFileName = headerText.trim().replace(/[/\\?%*:|"<>]/g, '-');
+        if(!safeFileName) safeFileName = 'Land-Measurement';
+        
         calculateArea(); 
         
         const shape = document.querySelector('input[name="shape"]:checked').value;
@@ -923,7 +1020,7 @@
         const extHTMLRec = `<span style="font-size:14px; color:#555; font-weight:normal;">${resData.sarsahiSqFtStr}</span>`;
 
         const receiptHTML = `
-            <div class="receipt-header">Land measurement - ਵੇਰਵਾ</div>
+            <div class="receipt-header">${headerText}</div>
             <div style="text-align:center; margin:-12px 0 20px; color:#555; font-size:16px;"><b>${currentMeasurement === "urban" ? "ਸ਼ਹਿਰੀ ਮਿਣਤੀ" : "ਪੇਂਡੂ ਮਿਣਤੀ"}</b>${currentMeasurement === "urban" ? " — 1 ਮਰਲਾ = 225 ਸਕੇਅਰ ਫੁੱਟ" : ""}</div>
             
             <div class="receipt-section">
@@ -971,7 +1068,7 @@
             useCORS: true
         }).then(canvas => {
             let link = document.createElement('a');
-            link.download = 'Land-Measure-Result.jpg';
+            link.download = safeFileName + '.jpg'; // Download file name updated
             link.href = canvas.toDataURL('image/jpeg', 0.9);
             link.click();
         });
