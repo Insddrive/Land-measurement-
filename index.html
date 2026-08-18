@@ -21,43 +21,71 @@
             display: block; 
         }
         .container {
-            background-color: #ffffff;
+            background-color: transparent;
             width: 100%;
             max-width: 600px;
-            margin: 0 auto; 
+            margin: 0 auto;
             padding: 25px 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 0;
+            box-shadow: none;
             text-align: center;
             box-sizing: border-box;
         }
-        h2 {
-            margin-top: 0;
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 22px;
-        }
-        .shape-selection {
+
+        .measurement-tabs {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            font-size: 16px;
+            border-bottom: 1px solid #d9d9d9;
         }
-        .shape-selection label {
+
+        .measurement-tab {
+            flex: 1;
+            padding: 12px 8px;
+            border: none;
+            background: transparent;
+            color: #555;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+
+        .measurement-tab.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+
+        .urban-note {
+            font-size: 12px;
+            color: #777;
+            margin-top: -10px;
+            margin-bottom: 18px;
+        }
+
+        .top-controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-weight: bold;
+            font-size: 15px;
+            width: 100%;
+        }
+        .top-controls-row label {
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 5px;
+            white-space: nowrap;
         }
-        .unit-section {
-            margin-bottom: 20px;
+        .unit-dropdown-wrapper {
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 5px;
         }
+
         select, input[type="number"] {
             padding: 10px;
             border: 1px solid #ccc;
@@ -67,9 +95,20 @@
             text-align: center;
             box-sizing: border-box;
         }
+        
+        /* Placeholder styling for background unit */
+        input[type="number"]::placeholder {
+            color: #aaa;
+            font-weight: normal;
+        }
+
+        .unit-dropdown-wrapper select {
+            padding: 6px 10px;
+        }
         select:focus, input[type="number"]:focus {
             border-color: #4CAF50;
         }
+        
         .karam-setup {
             display: none;
             background-color: #f8f9fa;
@@ -126,16 +165,18 @@
             border-radius: 6px;
             overflow: hidden;
             width: 100%;
-            max-width: 110px;
+            max-width: 145px;
             background: #fff;
         }
         .input-wrapper input {
             border: none;
             border-radius: 0;
             width: 100%;
+            min-width: 0;
             padding: 10px 5px;
             outline: none;
         }
+
         .extra-sel {
             border: none;
             border-left: 1px solid #eee;
@@ -166,7 +207,7 @@
             align-items: flex-start;
         }
         .three-sides-row .input-wrapper, .three-sides-row .extra-inp {
-            max-width: 95px;
+            max-width: 100px; /* Space increased slightly due to removed badge */
         }
 
         .link-btn {
@@ -306,37 +347,46 @@
 
         @media (max-width: 400px) {
             .res-label { width: 90px; }
-            .shape-selection { gap: 10px; font-size: 14px; }
+            .top-controls-row { font-size: 13px; gap: 5px; }
+            .top-controls-row label { gap: 3px; }
+            .unit-dropdown-wrapper { gap: 3px; }
+            .unit-dropdown-wrapper select { padding: 4px; font-size: 13px; }
             .karam-row label { font-size: 13px; }
             .karam-row input { width: 60px; }
             .extra-sel { font-size: 10px; padding: 10px 0; }
+            .input-wrapper { max-width: 140px; }
         }
     </style>
 </head>
 <body>
 
+<div class="measurement-tabs">
+    <button class="measurement-tab active" id="rural-tab" onclick="switchMeasurement('rural')">ਪੇਂਡੂ ਮਿਣਤੀ</button>
+    <button class="measurement-tab" id="urban-tab" onclick="switchMeasurement('urban')">ਸ਼ਹਿਰੀ ਮਿਣਤੀ</button>
+</div>
+
 <div class="container" id="app-container">
-    <h2>Land measurement</h2>
     
-    <div class="shape-selection">
+    <div class="top-controls-row">
         <label>
             <input type="radio" id="four-sides" name="shape" value="4" checked onchange="toggleInputs(); saveToLocal()">
             ਚਾਰ ਭੁਜਾਵਾਂ
         </label>
+        
+        <div class="unit-dropdown-wrapper">
+            <label>ਯੂਨਿਟ:</label>
+            <select id="main-unit" onchange="toggleKaramSetup(); saveToLocal()">
+                <option value="foot">ਫੁੱਟ</option>
+                <option value="meter">ਮੀਟਰ</option>
+                <option value="karam">ਕਰਮਾ</option>
+                <option value="inch">ਇੰਚ</option>
+            </select>
+        </div>
+
         <label>
             <input type="radio" id="three-sides" name="shape" value="3" onchange="toggleInputs(); saveToLocal()">
             ਤਿੰਨ ਭੁਜਾਵਾਂ
         </label>
-    </div>
-
-    <div class="unit-section">
-        <label style="font-weight: bold;">ਯੂਨਿਟ ਚੁਣੋ:</label>
-        <select id="main-unit" onchange="toggleKaramSetup(); saveToLocal()">
-            <option value="foot">ਫੁੱਟ</option>
-            <option value="meter">ਮੀਟਰ</option>
-            <option value="karam">ਕਰਮਾ</option>
-            <option value="inch">ਇੰਚ</option>
-        </select>
     </div>
 
     <div id="karam-settings" class="karam-setup">
@@ -357,6 +407,14 @@
         <button class="action-btn clear-btn" onclick="clearData()">Clear</button>
     </div>
 
+    <!-- WhatsApp Developer Link -->
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="https://wa.me/919464491806" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-size: 16px; font-weight: bold; color: #555;">
+            Developer
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.662-2.06-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.002 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </a>
+    </div>
+
     <div id="result-box">
         <div id="result-content">
             <div class="res-block" id="res-1"></div>
@@ -374,7 +432,6 @@
 <div id="receipt-container"></div>
 
 <script>
-    // PWA Service Worker Registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
@@ -389,9 +446,42 @@
 
     let linkL = false;
     let linkW = false;
-    let currentKaramUnit = 'foot'; 
+    let currentKaramUnit = 'foot';
     let isLoaded = false;
-    let resData = {}; 
+    let resData = {};
+    let currentMeasurement = localStorage.getItem('landMeasurementMode') || 'rural';
+
+    const MEASUREMENT_RULES = {
+        rural: { marlaSqFt: 272.25, sarsahiPerMarla: 9, marlaPerKanal: 20, kanalPerKilla: 8 },
+        urban: { marlaSqFt: 225, sarsahiPerMarla: 9, marlaPerKanal: 20, kanalPerKilla: 8 }
+    };
+
+    function storageKey() {
+        return currentMeasurement === 'urban' ? 'jaminDataUrban' : 'jaminDataRural';
+    }
+
+    function switchMeasurement(mode) {
+        if (mode !== 'urban' && mode !== 'rural') mode = 'rural';
+
+        if (isLoaded) saveToLocal();
+
+        currentMeasurement = mode;
+        localStorage.setItem('landMeasurementMode', mode);
+
+        document.getElementById('rural-tab').classList.toggle('active', mode === 'rural');
+        document.getElementById('urban-tab').classList.toggle('active', mode === 'urban');
+        
+        let urbanNote = document.getElementById('urban-note');
+        if (urbanNote) {
+            urbanNote.style.display = mode === 'urban' ? 'block' : 'none';
+        }
+
+        isLoaded = false;
+        linkL = false;
+        linkW = false;
+        currentKaramUnit = 'foot';
+        loadFromLocal();
+    } 
 
     const linkIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
 
@@ -402,7 +492,7 @@
             <div class="input-box">
                 <label>${label}</label>
                 <div class="input-wrapper">
-                    <input type="number" id="${id}" step="any" ${syncStr}>
+                    <input type="number" id="${id}" step="any" placeholder="ਫੁੱਟ" ${syncStr}>
                     <select class="extra-sel" id="sel_${id}" onchange="toggleExtra('${id}'); ${syncSelStr}">
                         <option value="">+</option>
                         <option value="inch">ਇੰਚ</option>
@@ -452,6 +542,8 @@
                 </div>
             `;
         }
+
+        updateInputUnitLabels();
     }
 
     function toggleLink(type) {
@@ -500,9 +592,28 @@
         currentKaramUnit = newUnit;
     }
 
+    function updateInputUnitLabels() {
+        const unit = document.getElementById('main-unit').value;
+        const labels = {
+            foot: 'ਫੁੱਟ',
+            meter: 'ਮੀਟਰ',
+            karam: 'ਕਰਮਾ',
+            inch: 'ਇੰਚ'
+        };
+        const text = labels[unit] || 'ਫੁੱਟ';
+
+        ['l1', 'l2', 'w1', 'w2', 's1', 's2', 's3'].forEach(id => {
+            const inp = document.getElementById(id);
+            if (inp) {
+                inp.placeholder = text; // ਯੂਨਿਟ ਹੁਣ ਡੱਬੇ ਦੇ ਬੈਕਗਰਾਊਂਡ ਵਿੱਚ ਦਿਖੇਗੀ
+            }
+        });
+    }
+
     function toggleKaramSetup() {
         const unit = document.getElementById('main-unit').value;
         document.getElementById('karam-settings').style.display = (unit === 'karam') ? 'block' : 'none';
+        updateInputUnitLabels();
     }
 
     function saveToLocal() {
@@ -525,14 +636,15 @@
                 }
             }
         });
-        localStorage.setItem('jaminData', JSON.stringify(data));
+        localStorage.setItem(storageKey(), JSON.stringify(data));
     }
 
     function loadFromLocal() {
-        const saved = localStorage.getItem('jaminData');
+        const saved = localStorage.getItem(storageKey());
         if (saved) {
             const data = JSON.parse(saved);
-            document.querySelector(`input[name="shape"][value="${data.shape}"]`).checked = true;
+            const savedShape = data.shape === '3' ? '3' : '4';
+            document.querySelector(`input[name="shape"][value="${savedShape}"]`).checked = true;
             toggleInputs();
             
             document.getElementById('main-unit').value = data.mainUnit || 'foot';
@@ -560,14 +672,19 @@
                 }
             });
         } else {
+            document.getElementById('four-sides').checked = true;
+            document.getElementById('three-sides').checked = false;
             toggleInputs();
+            document.getElementById('main-unit').value = 'foot';
+            updateInputUnitLabels();
         }
+        updateInputUnitLabels();
         isLoaded = true;
     }
 
     function clearData() {
         if(confirm("ਕੀ ਤੁਸੀਂ ਸਾਰਾ ਡਾਟਾ ਕਲੀਅਰ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?")) {
-            localStorage.removeItem('jaminData');
+            localStorage.removeItem(storageKey());
             location.reload();
         }
     }
@@ -640,18 +757,20 @@
     }
 
     function displayResults(sqFt) {
+        const rules = MEASUREMENT_RULES[currentMeasurement];
         const sqMeter = sqFt * 0.092903;
         const gaj = sqFt / 9;
         const hectare = sqMeter / 10000;
 
-        const totalSarsahi = sqFt / 30.25;
-        const totalMarlas = totalSarsahi / 9;
-        const totalKanals = totalMarlas / 20;
+        const sarsahiSqFt = rules.marlaSqFt / rules.sarsahiPerMarla;
+        const totalSarsahi = sqFt / sarsahiSqFt;
+        const totalMarlas = sqFt / rules.marlaSqFt;
+        const totalKanals = totalMarlas / rules.marlaPerKanal;
 
-        const killas = Math.floor(totalKanals / 8);
-        const remKanals = Math.floor(totalKanals % 8);
-        const remMarlas = Math.floor(totalMarlas % 20);
-        const remSarsahis = (totalSarsahi % 9).toFixed(2);
+        const killas = Math.floor(totalKanals / rules.kanalPerKilla);
+        const remKanals = Math.floor(totalKanals % rules.kanalPerKilla);
+        const remMarlas = Math.floor(totalMarlas % rules.marlaPerKanal);
+        const remSarsahis = (totalSarsahi % rules.sarsahiPerMarla).toFixed(2);
 
         const onlyKanals = Math.floor(totalKanals);
         const onlyMarlas = Math.floor(totalMarlas);
@@ -755,6 +874,7 @@
 
         const receiptHTML = `
             <div class="receipt-header">Land measurement - ਵੇਰਵਾ</div>
+            <div style="text-align:center; margin:-12px 0 20px; color:#555; font-size:16px;"><b>${currentMeasurement === "urban" ? "ਸ਼ਹਿਰੀ ਮਿਣਤੀ" : "ਪੇਂਡੂ ਮਿਣਤੀ"}</b>${currentMeasurement === "urban" ? " — 1 ਮਰਲਾ = 225 ਸਕੇਅਰ ਫੁੱਟ" : ""}</div>
             
             <div class="receipt-section">
                 <div class="receipt-sec-title">ਦਿੱਤੀ ਗਈ ਮਿਣਤੀ (${shape == '4' ? 'ਚਾਰ ਭੁਜਾਵਾਂ' : 'ਤਿੰਨ ਭੁਜਾਵਾਂ'})</div>
@@ -807,7 +927,29 @@
         });
     }
 
-    window.onload = loadFromLocal;
+    function initApp() {
+        currentMeasurement = localStorage.getItem('landMeasurementMode') || 'rural';
+        document.getElementById('rural-tab').classList.toggle('active', currentMeasurement === 'rural');
+        document.getElementById('urban-tab').classList.toggle('active', currentMeasurement === 'urban');
+        
+        let urbanNote = document.getElementById('urban-note');
+        if (urbanNote) {
+            urbanNote.style.display = currentMeasurement === 'urban' ? 'block' : 'none';
+        }
+
+        if (!localStorage.getItem(storageKey())) {
+            document.getElementById('four-sides').checked = true;
+        }
+        loadFromLocal();
+        updateInputUnitLabels();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
+    }
+    window.addEventListener('load', initApp);
 </script>
 
 </body>
