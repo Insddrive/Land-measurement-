@@ -1,4 +1,4 @@
-const CACHE_NAME = 'land-measure-v1';
+const CACHE_NAME = 'land-measure-v2.1';
 const urlsToCache = [
   './',
   './index.html',
@@ -14,13 +14,13 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Cache hit - return response
         if (response) {
           return response;
         }
@@ -42,4 +42,5 @@ self.addEventListener('activate', event => {
       );
     })
   );
+  self.clients.claim();
 });
