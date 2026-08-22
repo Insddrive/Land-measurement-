@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- Version Query added to CSS/JS forcing browser to drop old cache -->
     <meta name="theme-color" content="#4CAF50" id="theme-meta">
-    <title>Land measurement v2.4</title>
+    <title>Land measurement v2.5</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192x192.png">
@@ -183,36 +183,12 @@
         .link-btn svg { width: 22px; height: 22px; }
         .link-btn.active { color: #007bff; }
 
-        #preview-container {
-            display: none;
-            width: 100%;
-            background: transparent;
-            border: none;
-            padding: 10px 0;
-            box-sizing: border-box;
-            margin-bottom: 20px;
-        }
-
         .button-row {
-            display: flex; gap: 15px; margin-top: 15px; width: 100%;
+            display: flex; justify-content: center; margin-top: 15px; width: 100%;
         }
-        .action-btn {
-            flex: 1; padding: 12px; font-size: 18px; font-weight: bold; background-color: #ffffff; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: 0.3s;
-        }
-        .preview-btn {
-            color: var(--primary);
-            border-color: var(--primary);
-        }
-        .preview-btn:hover { background-color: var(--primary-light); }
-        .preview-btn.cancel-preview {
-            color: #d90000;
-            border-color: #d90000;
-        }
-        .preview-btn.cancel-preview:hover { background-color: #fdeaea; }
-        
         .clear-btn {
-            color: #666;
-            border-color: #ccc;
+            flex: 1; padding: 12px; font-size: 18px; font-weight: bold; background-color: #ffffff; border-radius: 6px; cursor: pointer; transition: 0.3s;
+            color: #666; border: 2px solid #ccc; width: 100%;
         }
         .clear-btn:hover { background-color: #f1f1f1; }
 
@@ -354,12 +330,8 @@
 
     <div id="inputs-container"></div>
     
-    <div id="preview-container">
-        <div id="preview-svg-container"></div>
-    </div>
-
     <div class="button-row" id="action-buttons">
-        <button class="action-btn preview-btn" id="preview-toggle-btn" onclick="togglePreview()">ਪ੍ਰੀਵਿਊ</button>
+        <!-- ਸਿਰਫ਼ Clear ਬਟਨ ਰੱਖਿਆ ਗਿਆ ਹੈ -->
         <button class="action-btn clear-btn" onclick="clearData()">Clear</button>
     </div>
 
@@ -403,7 +375,7 @@
 <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=2.4')
+        navigator.serviceWorker.register('./sw.js?v=2.5')
           .then(registration => { console.log('SW registered'); })
           .catch(err => { console.log('SW failed: ', err); });
       });
@@ -413,7 +385,6 @@
     let linkW = false;
     let currentKaramUnit = 'foot';
     let isLoaded = false;
-    let isPreviewActive = false;
     let resData = {};
     let currentMeasurement = 'rural';
 
@@ -437,7 +408,6 @@
         document.getElementById('rural-tab').classList.toggle('active', mode === 'rural');
         document.getElementById('urban-tab').classList.toggle('active', mode === 'urban');
         
-        // Urban Purple Theme switch
         if (mode === 'urban') {
             document.body.classList.add('urban-theme');
             document.getElementById('theme-meta').setAttribute('content', '#9C27B0');
@@ -452,14 +422,13 @@
         currentKaramUnit = 'foot';
         loadFromLocal();
         calculateArea(); 
-        if(isPreviewActive) drawPreview();
     } 
 
     const linkIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
 
     function createInputBox(id, label, type, source) {
-        let syncStr = `oninput="syncInputs('${type}', ${source}); saveToLocal(); calculateArea(); if(isPreviewActive) drawPreview();"`;
-        let syncSelStr = `syncInputs('${type}', ${source}); saveToLocal(); calculateArea(); if(isPreviewActive) drawPreview();`;
+        let syncStr = `oninput="syncInputs('${type}', ${source}); saveToLocal(); calculateArea();"`;
+        let syncSelStr = `syncInputs('${type}', ${source}); saveToLocal(); calculateArea();`;
         return `
             <div class="input-box">
                 <label>${label}</label>
@@ -516,7 +485,6 @@
         }
 
         updateInputUnitLabels();
-        if(isPreviewActive) drawPreview();
     }
 
     function toggleLink(type) {
@@ -593,7 +561,7 @@
         const unit = document.getElementById('main-unit').value;
         const karamSet = document.getElementById('karam-settings');
         if (unit === 'karam') {
-            if(!isPreviewActive) karamSet.style.display = 'block';
+            karamSet.style.display = 'block';
         } else {
             karamSet.style.display = 'none';
         }
@@ -679,8 +647,6 @@
             
             document.getElementById('result-box').style.display = 'none';
             saveToLocal();
-            
-            if(isPreviewActive) togglePreview(); 
         }
     }
 
@@ -847,144 +813,6 @@
         document.getElementById('result-box').style.display = 'block';
     }
 
-    function togglePreview() {
-        isPreviewActive = !isPreviewActive;
-        const btn = document.getElementById('preview-toggle-btn');
-        const inputs = document.getElementById('inputs-container');
-        const preview = document.getElementById('preview-container');
-        const karam = document.getElementById('karam-settings');
-        
-        if (isPreviewActive) {
-            btn.textContent = 'ਪ੍ਰੀਵਿਊ ਬੰਦ ਕਰੋ';
-            btn.classList.add('cancel-preview');
-            inputs.style.display = 'none';
-            if(karam) karam.style.display = 'none';
-            preview.style.display = 'block';
-            drawPreview();
-        } else {
-            btn.textContent = 'ਪ੍ਰੀਵਿਊ';
-            btn.classList.remove('cancel-preview');
-            inputs.style.display = 'block';
-            toggleKaramSetup(); 
-            preview.style.display = 'none';
-        }
-    }
-
-    function drawPreview() {
-        const previewContainer = document.getElementById('preview-svg-container');
-        previewContainer.innerHTML = ''; 
-
-        const shape = document.querySelector('input[name="shape"]:checked').value;
-        const mult = getMultiplierToFeet();
-
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", "0 0 300 300");
-        svg.style.width = "100%";
-        svg.style.height = "250px";
-
-        const getLabel = (id) => {
-            let el = document.getElementById(id);
-            if(!el) return '0';
-            let v = el.value;
-            if(!v) v = "0";
-            let unitSel = document.getElementById('main-unit');
-            let u = unitSel.options[unitSel.selectedIndex].text;
-            let sel = document.getElementById('sel_'+id);
-            let ext = document.getElementById('ext_'+id);
-            if(sel && sel.value && ext && ext.value) {
-                let map = {'inch':'ਇੰਚ', 'cm':'ਸੈਂ.ਮੀ'};
-                return `${v} ${u} + ${ext.value} ${map[sel.value]}`;
-            }
-            return `${v} ${u}`;
-        };
-
-        const addText = (text, x, y, anchor="middle") => {
-            let t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            t.setAttribute("x", x);
-            t.setAttribute("y", y);
-            t.setAttribute("text-anchor", anchor);
-            t.setAttribute("fill", "#222");
-            t.setAttribute("font-size", "14px");
-            t.setAttribute("font-weight", "bold");
-            t.textContent = text;
-            svg.appendChild(t);
-        };
-
-        if (shape === '4') {
-            let l1 = getSideTotalFeet('l1', mult) || 0.1;
-            let l2 = getSideTotalFeet('l2', mult) || 0.1;
-            let w1 = getSideTotalFeet('w1', mult) || 0.1;
-            let w2 = getSideTotalFeet('w2', mult) || 0.1;
-
-            let avgL = (l1 + l2) / 2;
-            let avgW = (w1 + w2) / 2;
-
-            let maxDim = Math.max(avgL, avgW);
-            let scale = 160 / maxDim;
-
-            let drawW = avgL * scale;
-            let drawH = avgW * scale;
-
-            let startX = (300 - drawW) / 2;
-            let startY = (300 - drawH) / 2;
-
-            let rect = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-            rect.setAttribute("points", `${startX},${startY} ${startX+drawW},${startY} ${startX+drawW},${startY+drawH} ${startX},${startY+drawH}`);
-            rect.setAttribute("fill", "var(--primary-light)");
-            rect.setAttribute("stroke", "var(--primary)");
-            rect.setAttribute("stroke-width", "3");
-            svg.appendChild(rect);
-
-            addText(getLabel('l1'), 150, startY - 12); 
-            addText(getLabel('l2'), 150, startY + drawH + 22); 
-            
-            addText(getLabel('w1'), startX - 8, 150 + 5, "end"); 
-            addText(getLabel('w2'), startX + drawW + 8, 150 + 5, "start"); 
-
-        } else { 
-            let s1 = getSideTotalFeet('s1', mult) || 0.1;
-            let s2 = getSideTotalFeet('s2', mult) || 0.1;
-            let s3 = getSideTotalFeet('s3', mult) || 0.1;
-
-            if (s1 + s2 > s3 && s2 + s3 > s1 && s1 + s3 > s2) {
-                let x = (s1*s1 + s3*s3 - s2*s2) / (2 * s1);
-                let y = Math.sqrt(s3*s3 - x*x);
-
-                let minX = Math.min(0, s1, x);
-                let maxX = Math.max(0, s1, x);
-                
-                let width = maxX - minX;
-                let height = y;
-
-                let scale = 160 / Math.max(width, height);
-
-                let drawW = width * scale;
-                let drawH = height * scale;
-                
-                let startX = (300 - drawW) / 2 - (minX * scale);
-                let startY = (300 - drawH) / 2;
-
-                let pt1 = `${startX}, ${startY + drawH}`; 
-                let pt2 = `${startX + s1*scale}, ${startY + drawH}`; 
-                let pt3 = `${startX + x*scale}, ${startY}`; 
-
-                let tri = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-                tri.setAttribute("points", `${pt1} ${pt2} ${pt3}`);
-                tri.setAttribute("fill", "var(--primary-light)");
-                tri.setAttribute("stroke", "var(--primary)");
-                tri.setAttribute("stroke-width", "3");
-                svg.appendChild(tri);
-
-                addText(getLabel('s1'), startX + (s1*scale)/2, startY + drawH + 22); 
-                addText(getLabel('s2'), startX + ((s1+x)*scale)/2 + 8, startY + drawH/2, "start"); 
-                addText(getLabel('s3'), startX + (x*scale)/2 - 8, startY + drawH/2, "end"); 
-            } else {
-                addText("ਗਲਤ ਮਾਪ! ਤਿਕੋਣ ਨਹੀਂ ਬਣ ਸਕਦੀ।", 150, 150);
-            }
-        }
-        previewContainer.appendChild(svg);
-    }
-
     function openPrompt() {
         document.getElementById('custom-prompt').style.display = 'flex';
         document.getElementById('prompt-input').value = '';
@@ -1100,33 +928,29 @@
         });
     }
 
+    // Initialize App and Clear LocalStorage completely on Refresh
     function initApp() {
-        if (!localStorage.getItem('firstLoadv24')) {
-            localStorage.clear();
-            localStorage.setItem('firstLoadv24', 'done');
-        }
+        localStorage.clear();
 
-        currentMeasurement = localStorage.getItem('landMeasurementMode') || 'rural';
-        document.getElementById('rural-tab').classList.toggle('active', currentMeasurement === 'rural');
-        document.getElementById('urban-tab').classList.toggle('active', currentMeasurement === 'urban');
+        currentMeasurement = 'rural';
+        document.getElementById('rural-tab').classList.add('active');
+        document.getElementById('urban-tab').classList.remove('active');
+        document.body.classList.remove('urban-theme');
+        document.getElementById('theme-meta').setAttribute('content', '#4CAF50');
         
-        if (currentMeasurement === 'urban') {
-            document.body.classList.add('urban-theme');
-            document.getElementById('theme-meta').setAttribute('content', '#9C27B0');
-        } else {
-            document.body.classList.remove('urban-theme');
-            document.getElementById('theme-meta').setAttribute('content', '#4CAF50');
-        }
-
-        let urbanNote = document.getElementById('urban-note');
-        if (urbanNote) urbanNote.style.display = currentMeasurement === 'urban' ? 'block' : 'none';
-
-        if (!localStorage.getItem(storageKey())) {
-            document.getElementById('four-sides').checked = true;
-        }
+        document.getElementById('four-sides').checked = true;
+        document.getElementById('main-unit').value = 'foot';
         
-        loadFromLocal();
+        isLoaded = false;
+        linkL = false;
+        linkW = false;
+        currentKaramUnit = 'foot';
+        
+        toggleInputs();
         updateInputUnitLabels();
+        toggleKaramSetup();
+        
+        isLoaded = true;
         calculateArea(); 
     }
 
