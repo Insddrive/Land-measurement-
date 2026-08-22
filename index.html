@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Land measurement</title>
+    <!-- Version Query added to CSS/JS forcing browser to drop old cache -->
+    <title>Land measurement v2.1</title>
     
     <!-- PWA Links -->
     <link rel="manifest" href="manifest.json">
@@ -441,6 +442,18 @@
             margin-left: 35px; 
         }
 
+        /* Developer Footer styling */
+        .dev-footer {
+            margin-top: 35px;
+            border-top: 2px dashed #ddd;
+            padding-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            font-weight: bold;
+        }
+
         @media (max-width: 400px) {
             .res-label { width: 90px; }
             .top-controls-row { font-size: 13px; gap: 5px; }
@@ -464,7 +477,6 @@
 <div class="container" id="app-container">
     
     <div class="top-controls-row">
-        <!-- Square Custom Radio -->
         <label>
             <input type="radio" id="four-sides" class="shape-radio" name="shape" value="4" checked onchange="toggleInputs(); saveToLocal()">
             <span class="custom-radio">
@@ -483,7 +495,6 @@
             </select>
         </div>
 
-        <!-- Triangle Custom Radio -->
         <label>
             <input type="radio" id="three-sides" class="shape-radio" name="shape" value="3" onchange="toggleInputs(); saveToLocal()">
             <span class="custom-radio">
@@ -537,7 +548,7 @@
 <div id="custom-prompt" class="modal-overlay">
     <div class="modal-box">
         <h3>ਵੇਰਵਾ ਭਰੋ:</h3>
-        <input type="text" id="prompt-input" placeholder="ਵੇਰਵਾ ਭਰੋ" />
+        <input type="text" id="prompt-input" placeholder="ਵੇਰਵਾ ਭਰੋ (ਜਿਵੇਂ ਪਿੰਡ ਦਾ ਨਾਂ)" />
         <div class="modal-buttons">
             <button class="modal-btn cancel" onclick="closePrompt()">Cancel</button>
             <button class="modal-btn ok" onclick="confirmPrompt()">OK</button>
@@ -550,7 +561,8 @@
 <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
+        // Query param added to force update Service Worker
+        navigator.serviceWorker.register('./sw.js?v=2.1')
           .then(registration => {
             console.log('ServiceWorker registration successful');
           })
@@ -565,7 +577,7 @@
     let currentKaramUnit = 'foot';
     let isLoaded = false;
     let resData = {};
-    let currentMeasurement = localStorage.getItem('landMeasurementMode') || 'rural';
+    let currentMeasurement = 'rural';
 
     const MEASUREMENT_RULES = {
         rural: { marlaSqFt: 272.25, sarsahiPerMarla: 9, marlaPerKanal: 20, kanalPerKilla: 8 },
@@ -879,17 +891,19 @@
         const hectare = sqMeter / 10000;
 
         const sarsahiSqFt = rules.marlaSqFt / rules.sarsahiPerMarla;
-        const totalSarsahi = sqFt / sarsahiSqFt;
         const totalMarlas = sqFt / rules.marlaSqFt;
         const totalKanals = totalMarlas / rules.marlaPerKanal;
 
         const killas = Math.floor(totalKanals / rules.kanalPerKilla);
         const remKanals = Math.floor(totalKanals % rules.kanalPerKilla);
         const remMarlas = Math.floor(totalMarlas % rules.marlaPerKanal);
-        const remSarsahisVal = (totalSarsahi % rules.sarsahiPerMarla).toFixed(2);
+        
+        // Exact remaining SqFt calculation without reverse-rounding errors
+        const extraSqFtAfterMarlas = sqFt % rules.marlaSqFt;
+        const remSarsahisVal = (extraSqFtAfterMarlas / sarsahiSqFt).toFixed(2);
 
-        const sarsahiInSqFt = (remSarsahisVal * sarsahiSqFt).toFixed(2);
-        const sarsahiSqFtStr = Number(remSarsahisVal) > 0 ? `(${sarsahiInSqFt} ਵਰਗ ਫੁੱਟ)` : '';
+        // Show EXACT square feet directly in bracket
+        const sarsahiSqFtStr = extraSqFtAfterMarlas > 0.005 ? `(${extraSqFtAfterMarlas.toFixed(2)} ਵਰਗ ਫੁੱਟ)` : '';
 
         const onlyKanals = Math.floor(totalKanals);
         const onlyMarlas = Math.floor(totalMarlas);
@@ -1057,6 +1071,12 @@
                 <div class="receipt-res-line"><b>6.</b> &nbsp;&nbsp;ਗਜ: <span class="receipt-hl">${resData.gaj}</span></div>
                 <div class="receipt-res-line"><b>7.</b> &nbsp;&nbsp;ਹੈਕਟੇਅਰ: <span class="receipt-hl">${resData.hectare}</span></div>
             </div>
+            
+            <!-- Developer details appended here -->
+            <div class="dev-footer">
+                ਸੌਫਟਵੇਅਰ ਬਣਾਇਆ ਗਿਆ - ਸ: ਇੰਦਰਜੀਤ ਸਿੰਘ ਤਲਵੰਡੀ ਸਾਬੋ<br>
+                ਫੀਡਬੈਕ ਫੌਨ ਨੰਬਰ - 94644-91806
+            </div>
         `;
         
         const printArea = document.getElementById('receipt-container');
@@ -1068,27 +1088,38 @@
             useCORS: true
         }).then(canvas => {
             let link = document.createElement('a');
-            link.download = safeFileName + '.jpg'; // Download file name updated
+            link.download = safeFileName + '.jpg'; 
             link.href = canvas.toDataURL('image/jpeg', 0.9);
             link.click();
         });
     }
 
     function initApp() {
-        currentMeasurement = localStorage.getItem('landMeasurementMode') || 'rural';
-        document.getElementById('rural-tab').classList.toggle('active', currentMeasurement === 'rural');
-        document.getElementById('urban-tab').classList.toggle('active', currentMeasurement === 'urban');
+        // Clear all saved data on Page Reload to strictly revert to defaults
+        localStorage.clear();
+
+        currentMeasurement = 'rural';
+        document.getElementById('rural-tab').classList.add('active');
+        document.getElementById('urban-tab').classList.remove('active');
         
         let urbanNote = document.getElementById('urban-note');
         if (urbanNote) {
-            urbanNote.style.display = currentMeasurement === 'urban' ? 'block' : 'none';
+            urbanNote.style.display = 'none';
         }
 
-        if (!localStorage.getItem(storageKey())) {
-            document.getElementById('four-sides').checked = true;
-        }
-        loadFromLocal();
+        document.getElementById('four-sides').checked = true;
+        document.getElementById('main-unit').value = 'foot';
+        
+        isLoaded = false;
+        linkL = false;
+        linkW = false;
+        currentKaramUnit = 'foot';
+        
+        toggleInputs();
         updateInputUnitLabels();
+        toggleKaramSetup();
+        
+        isLoaded = true;
     }
 
     if (document.readyState === 'loading') {
@@ -1096,6 +1127,7 @@
     } else {
         initApp();
     }
+    // Ensures cleanup on refresh
     window.addEventListener('load', initApp);
 </script>
 
