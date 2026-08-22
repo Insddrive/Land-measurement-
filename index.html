@@ -4,21 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- Version Query added to CSS/JS forcing browser to drop old cache -->
-    <title>Land measurement v2.2</title>
+    <meta name="theme-color" content="#4CAF50" id="theme-meta">
+    <title>Land measurement v2.4</title>
     
-    <!-- PWA Links -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4CAF50">
     <link rel="apple-touch-icon" href="icon-192x192.png">
-
-    <!-- ਫੋਟੋ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਲਾਇਬ੍ਰੇਰੀ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-light: #e8f5e9;
+        }
+        body.urban-theme {
+            --primary: #9C27B0;
+            --primary-light: #f3e5f5;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f2f5;
             margin: 0;
-            padding: 20px 15px; 
+            padding: 20px 15px 90px 15px; 
             display: block; 
         }
         .container {
@@ -51,11 +58,12 @@
             font-weight: bold;
             cursor: pointer;
             border-bottom: 3px solid transparent;
+            transition: all 0.3s;
         }
 
         .measurement-tab.active {
-            color: #4CAF50;
-            border-bottom-color: #4CAF50;
+            color: var(--primary);
+            border-bottom-color: var(--primary);
         }
 
         .urban-note {
@@ -82,10 +90,7 @@
             white-space: nowrap;
         }
 
-        /* Custom Radio Buttons styles */
-        .shape-radio {
-            display: none;
-        }
+        .shape-radio { display: none; }
         .custom-radio {
             display: inline-flex;
             align-items: center;
@@ -99,13 +104,10 @@
             stroke-width: 2.5;
             transition: all 0.2s ease-in-out;
         }
-        .shape-radio:checked + .custom-radio .icon-square {
-            fill: #007bff;
-            stroke: #007bff;
-        }
+        .shape-radio:checked + .custom-radio .icon-square,
         .shape-radio:checked + .custom-radio .icon-triangle {
-            fill: #007bff;
-            stroke: #007bff;
+            fill: var(--primary);
+            stroke: var(--primary);
         }
 
         .unit-dropdown-wrapper {
@@ -113,7 +115,6 @@
             align-items: center;
             gap: 5px;
         }
-
         select, input[type="number"] {
             padding: 10px;
             border: 1px solid #ccc;
@@ -123,185 +124,110 @@
             text-align: center;
             box-sizing: border-box;
         }
-        
-        /* Dropdown unit color change to RED */
         #main-unit {
             color: #d90000;
             font-weight: bold;
         }
-
-        /* Placeholder styling for background unit */
         input[type="number"]::placeholder {
             color: #aaa;
             font-weight: normal;
         }
-
         .unit-dropdown-wrapper select {
             padding: 6px 10px;
         }
         select:focus, input[type="number"]:focus {
-            border-color: #4CAF50;
+            border-color: var(--primary);
         }
         
         .karam-setup {
             display: none;
-            background-color: #f8f9fa;
-            padding: 15px 10px;
+            background-color: transparent;
+            padding: 15px 0;
             margin-bottom: 20px;
-            border-radius: 8px;
-            border: 1px solid #e1e4e8;
         }
         .karam-row {
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 5px; 
-            flex-wrap: nowrap; 
+            display: flex; align-items: center; justify-content: center; gap: 5px; flex-wrap: nowrap; 
         }
-        .karam-row label {
-            font-weight: bold; 
-            white-space: nowrap; 
-            font-size: 14px;
-        }
-        .karam-row input {
-            width: 70px;
-        }
-        .karam-row select {
-            padding: 10px 5px;
-        }
+        .karam-row label { font-weight: bold; white-space: nowrap; font-size: 14px; }
+        .karam-row input { width: 70px; }
+        .karam-row select { padding: 10px 5px; }
         
         .input-row {
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            width: 100%;
+            display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; width: 100%;
         }
         .input-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex: 1; 
+            display: flex; flex-direction: column; align-items: center; flex: 1; 
         }
         .input-box label {
-            font-size: 13px;
-            color: #555;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            font-weight: bold;
+            font-size: 13px; color: #555; margin-bottom: 5px; font-weight: bold;
         }
-        
         .input-wrapper {
-            display: flex;
-            align-items: center;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            overflow: hidden;
-            width: 100%;
-            max-width: 145px;
-            background: #fff;
+            display: flex; align-items: center; border: 1px solid #ccc; border-radius: 6px; overflow: hidden; width: 100%; max-width: 145px; background: #fff;
         }
         .input-wrapper input {
-            border: none;
-            border-radius: 0;
-            width: 100%;
-            min-width: 0;
-            padding: 10px 5px;
-            outline: none;
+            border: none; border-radius: 0; width: 100%; padding: 10px 5px; outline: none;
         }
-
         .extra-sel {
-            border: none;
-            border-left: 1px solid #eee;
-            background: #f8f9fa;
-            padding: 10px 2px;
-            font-size: 12px;
-            border-radius: 0;
-            outline: none;
-            color: #555;
-            cursor: pointer;
-            width: 35px;
+            border: none; border-left: 1px solid #eee; background: #f8f9fa; padding: 10px 2px; font-size: 12px; outline: none; color: #555; cursor: pointer; width: 35px;
         }
         .extra-inp {
-            margin-top: 5px;
-            padding: 6px 5px !important;
-            font-size: 13px !important;
-            width: 100%;
-            max-width: 110px;
-            border: 1px dashed #4CAF50 !important;
-            background-color: #f1fdf2;
+            margin-top: 5px; padding: 6px 5px !important; font-size: 13px !important; width: 100%; max-width: 110px; border: 1px dashed var(--primary) !important; background-color: var(--primary-light);
         }
 
-        .three-sides-row {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            gap: 5px;
-            align-items: flex-start;
-        }
-        .three-sides-row .input-wrapper, .three-sides-row .extra-inp {
-            max-width: 100px; 
-        }
+        .three-sides-row { justify-content: space-between; gap: 5px; }
+        .three-sides-row .input-wrapper, .three-sides-row .extra-inp { max-width: 100px; }
 
         .link-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #999;
-            padding: 10px 5px;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: none; border: none; cursor: pointer; color: #999; padding: 10px 5px; margin-top: 20px; transition: 0.3s;
         }
         .link-btn svg { width: 22px; height: 22px; }
-        .link-btn:hover { color: #666; }
         .link-btn.active { color: #007bff; }
 
-        .button-row {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
+        #preview-container {
+            display: none;
             width: 100%;
+            background: transparent;
+            border: none;
+            padding: 10px 0;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        .button-row {
+            display: flex; gap: 15px; margin-top: 15px; width: 100%;
         }
         .action-btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            background-color: #ffffff;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: 0.3s;
+            flex: 1; padding: 12px; font-size: 18px; font-weight: bold; background-color: #ffffff; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: 0.3s;
         }
-        .calc-btn {
-            color: #4CAF50;
-            border: 2px solid #4CAF50;
+        .preview-btn {
+            color: var(--primary);
+            border-color: var(--primary);
         }
-        .calc-btn:hover { background-color: #e8f5e9; }
+        .preview-btn:hover { background-color: var(--primary-light); }
+        .preview-btn.cancel-preview {
+            color: #d90000;
+            border-color: #d90000;
+        }
+        .preview-btn.cancel-preview:hover { background-color: #fdeaea; }
         
         .clear-btn {
-            color: #d90000;
-            border: 2px solid #d90000;
+            color: #666;
+            border-color: #ccc;
         }
-        .clear-btn:hover { background-color: #fdeaea; }
+        .clear-btn:hover { background-color: #f1f1f1; }
 
         #result-box {
             margin-top: 25px;
-            padding: 15px;
-            background-color: #fff;
-            border: 2px solid #ddd;
-            border-radius: 8px;
+            padding: 0;
+            background-color: transparent;
+            border: none;
             display: none;
             text-align: left;
             color: black;
             font-size: 16px;
         }
         .res-block {
-            border-bottom: 1px dashed #ccc;
-            padding: 12px 0;
+            border-bottom: 1px dashed #ccc; padding: 12px 0;
         }
         .res-block:first-child { padding-top: 0; }
         .res-block:last-child { border-bottom: none; padding-bottom: 0; }
@@ -311,147 +237,58 @@
         .hl { color: #d90000; font-weight: bold; font-size: 17px; }
 
         #download-btn {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
+            width: 100%; padding: 12px; margin-top: 20px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer;
         }
         #download-btn:hover { background-color: #0056b3; }
 
+        /* FIXED FOOTER at the bottom */
+        .fixed-dev-footer {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: #ffffff;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            text-align: center;
+            z-index: 1000;
+            border-top: 1px solid #ddd;
+        }
+        .wa-link {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-size: 15px; font-weight: bold; color: #555;
+        }
+        .fb-num { font-size: 12px; color: #666; margin-top: 4px; }
+
         /* Custom Modal / Dialog Box CSS */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;
         }
         .modal-box {
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 320px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            text-align: center;
+            background: #fff; padding: 25px; border-radius: 10px; width: 100%; max-width: 320px; text-align: center;
         }
-        .modal-box h3 {
-            margin-top: 0;
-            color: #333;
-            font-size: 20px;
-            margin-bottom: 15px;
-        }
+        .modal-box h3 { margin-top: 0; color: #333; font-size: 20px; margin-bottom: 15px; }
         .modal-box input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
+            width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box;
         }
-        .modal-box input:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: space-between;
-        }
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .modal-btn.cancel {
-            background-color: #f1f1f1;
-            color: #333;
-        }
-        .modal-btn.ok {
-            background-color: #007bff;
-            color: white;
-        }
+        .modal-box input:focus { border-color: #007bff; outline: none; }
+        .modal-buttons { display: flex; gap: 15px; justify-content: space-between; }
+        .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .modal-btn.cancel { background-color: #f1f1f1; color: #333; }
+        .modal-btn.ok { background-color: #007bff; color: white; }
 
         #receipt-container {
-            position: absolute;
-            left: -9999px; 
-            top: 0;
-            width: 650px; 
-            background-color: #ffffff;
-            padding: 40px;
-            font-family: Arial, sans-serif;
-            color: #000;
-            box-sizing: border-box;
+            position: absolute; left: -9999px; top: 0; width: 650px; background-color: #ffffff; padding: 40px; font-family: Arial, sans-serif; color: #000; box-sizing: border-box;
         }
-        .receipt-header {
-            text-align: center;
-            font-size: 26px;
-            font-weight: bold;
-            margin-bottom: 25px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 15px;
-            color: #111;
-        }
+        .receipt-header { text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 15px; color: #111; }
         .receipt-section { margin-bottom: 30px; }
         .receipt-sec-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            background-color: #f1f1f1;
-            padding: 10px 15px;
-            border-left: 5px solid #4CAF50;
-            margin-bottom: 15px;
-            border-radius: 3px;
+            font-size: 18px; font-weight: bold; color: #333; background-color: #f1f1f1; padding: 10px 15px; border-left: 5px solid var(--primary); margin-bottom: 15px; border-radius: 3px;
         }
-        .receipt-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 15px;
-            border-bottom: 1px solid #eee;
-            font-size: 17px;
-        }
-        .receipt-res-line {
-            padding: 14px 15px; 
-            border-bottom: 1px solid #eee;
-            font-size: 17px;
-            line-height: 1.6;
-        }
-        .receipt-res-line:last-child { border-bottom: none; }
-        .receipt-hl {
-            color: #d90000;
-            font-weight: bold;
-            font-size: 19px;
-        }
-        .res-space {
-            display: inline-block;
-            margin-left: 35px; 
-        }
+        .receipt-row { display: flex; justify-content: space-between; padding: 8px 15px; border-bottom: 1px solid #eee; font-size: 17px; }
+        .receipt-res-line { padding: 14px 15px; border-bottom: 1px solid #eee; font-size: 17px; line-height: 1.6; }
+        .receipt-hl { color: #d90000; font-weight: bold; font-size: 19px; }
+        .res-space { display: inline-block; margin-left: 35px; }
 
-        /* Developer Footer styling */
-        .dev-footer {
-            margin-top: 35px;
-            border-top: 2px dashed #ddd;
-            padding-top: 15px;
-            text-align: center;
-            font-size: 14px;
-            color: #666;
-            line-height: 1.6;
-            font-weight: bold;
+        .dev-receipt-footer {
+            margin-top: 35px; border-top: 2px dashed #ddd; padding-top: 15px; text-align: center; font-size: 14px; color: #666; line-height: 1.6; font-weight: bold;
         }
 
         @media (max-width: 400px) {
@@ -478,7 +315,7 @@
     
     <div class="top-controls-row">
         <label>
-            <input type="radio" id="four-sides" class="shape-radio" name="shape" value="4" checked onchange="toggleInputs(); saveToLocal()">
+            <input type="radio" id="four-sides" class="shape-radio" name="shape" value="4" checked onchange="toggleInputs(); saveToLocal(); calculateArea();">
             <span class="custom-radio">
                 <svg class="icon-square" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect></svg>
             </span>
@@ -487,7 +324,7 @@
         
         <div class="unit-dropdown-wrapper">
             <label style="color: #555;">ਯੂਨਿਟ:</label>
-            <select id="main-unit" onchange="toggleKaramSetup(); saveToLocal()">
+            <select id="main-unit" onchange="toggleKaramSetup(); saveToLocal(); calculateArea();">
                 <option value="foot">ਫੁੱਟ</option>
                 <option value="meter">ਮੀਟਰ</option>
                 <option value="karam">ਕਰਮਾ</option>
@@ -496,7 +333,7 @@
         </div>
 
         <label>
-            <input type="radio" id="three-sides" class="shape-radio" name="shape" value="3" onchange="toggleInputs(); saveToLocal()">
+            <input type="radio" id="three-sides" class="shape-radio" name="shape" value="3" onchange="toggleInputs(); saveToLocal(); calculateArea();">
             <span class="custom-radio">
                 <svg class="icon-triangle" viewBox="0 0 24 24"><polygon points="12,3 22,20 2,20"></polygon></svg>
             </span>
@@ -507,8 +344,8 @@
     <div id="karam-settings" class="karam-setup">
         <div class="karam-row">
             <label>ਇੱਕ ਕਰਮ:</label>
-            <input type="number" id="karam-value" value="5.5" step="any">
-            <select id="karam-unit" onchange="convertKaramValue(); saveToLocal()">
+            <input type="number" id="karam-value" value="5.5" step="any" oninput="saveToLocal(); calculateArea();">
+            <select id="karam-unit" onchange="convertKaramValue(); saveToLocal(); calculateArea();">
                 <option value="foot">ਫੁੱਟ</option>
                 <option value="inch">ਇੰਚ</option>
             </select>
@@ -516,19 +353,14 @@
     </div>
 
     <div id="inputs-container"></div>
-
-    <div class="button-row" id="action-buttons">
-        <button class="action-btn calc-btn" onclick="calculateArea()">ਮਿਣਤੀ ਕਰੋ</button>
-        <button class="action-btn clear-btn" onclick="clearData()">Clear</button>
+    
+    <div id="preview-container">
+        <div id="preview-svg-container"></div>
     </div>
 
-    <!-- WhatsApp Developer Link -->
-    <div style="text-align: center; margin-top: 20px;">
-        <a href="https://wa.me/919464491806" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-size: 16px; font-weight: bold; color: #555;">
-            Developer
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.662-2.06-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.002 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        </a>
-        <div style="font-size: 13px; color: #666; margin-top: 6px;">ਫੀਡਬੈਕ ਨੰਬਰ - 94644-91806</div>
+    <div class="button-row" id="action-buttons">
+        <button class="action-btn preview-btn" id="preview-toggle-btn" onclick="togglePreview()">ਪ੍ਰੀਵਿਊ</button>
+        <button class="action-btn clear-btn" onclick="clearData()">Clear</button>
     </div>
 
     <div id="result-box">
@@ -543,6 +375,15 @@
         </div>
         <button id="download-btn" onclick="openPrompt()">JPG ਡਾਊਨਲੋਡ ਕਰੋ</button>
     </div>
+</div>
+
+<!-- Fixed Footer pinned to Bottom -->
+<div class="fixed-dev-footer">
+    <a href="https://wa.me/919464491806" target="_blank" class="wa-link">
+        Developer
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.662-2.06-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.002 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+    <div class="fb-num">ਫੀਡਬੈਕ ਨੰਬਰ - 94644-91806</div>
 </div>
 
 <!-- Custom Prompt Modal -->
@@ -562,14 +403,9 @@
 <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        // Query param added to force update Service Worker
-        navigator.serviceWorker.register('./sw.js?v=2.2')
-          .then(registration => {
-            console.log('ServiceWorker registration successful');
-          })
-          .catch(err => {
-            console.log('ServiceWorker registration failed: ', err);
-          });
+        navigator.serviceWorker.register('./sw.js?v=2.4')
+          .then(registration => { console.log('SW registered'); })
+          .catch(err => { console.log('SW failed: ', err); });
       });
     }
 
@@ -577,6 +413,7 @@
     let linkW = false;
     let currentKaramUnit = 'foot';
     let isLoaded = false;
+    let isPreviewActive = false;
     let resData = {};
     let currentMeasurement = 'rural';
 
@@ -600,9 +437,13 @@
         document.getElementById('rural-tab').classList.toggle('active', mode === 'rural');
         document.getElementById('urban-tab').classList.toggle('active', mode === 'urban');
         
-        let urbanNote = document.getElementById('urban-note');
-        if (urbanNote) {
-            urbanNote.style.display = mode === 'urban' ? 'block' : 'none';
+        // Urban Purple Theme switch
+        if (mode === 'urban') {
+            document.body.classList.add('urban-theme');
+            document.getElementById('theme-meta').setAttribute('content', '#9C27B0');
+        } else {
+            document.body.classList.remove('urban-theme');
+            document.getElementById('theme-meta').setAttribute('content', '#4CAF50');
         }
 
         isLoaded = false;
@@ -610,13 +451,15 @@
         linkW = false;
         currentKaramUnit = 'foot';
         loadFromLocal();
+        calculateArea(); 
+        if(isPreviewActive) drawPreview();
     } 
 
     const linkIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`;
 
     function createInputBox(id, label, type, source) {
-        let syncStr = type ? `oninput="syncInputs('${type}', ${source}); saveToLocal()"` : `oninput="saveToLocal()"`;
-        let syncSelStr = type ? `syncInputs('${type}', ${source}); saveToLocal()` : `saveToLocal()`;
+        let syncStr = `oninput="syncInputs('${type}', ${source}); saveToLocal(); calculateArea(); if(isPreviewActive) drawPreview();"`;
+        let syncSelStr = `syncInputs('${type}', ${source}); saveToLocal(); calculateArea(); if(isPreviewActive) drawPreview();`;
         return `
             <div class="input-box">
                 <label>${label}</label>
@@ -653,12 +496,12 @@
             container.innerHTML = `
                 <div class="input-row">
                     ${createInputBox('l1', 'ਲੰਬਾਈ 1', 'L', 1)}
-                    <button class="link-btn ${linkL ? 'active' : ''}" id="btn-link-l" onclick="toggleLink('L'); saveToLocal()">${linkIcon}</button>
+                    <button class="link-btn ${linkL ? 'active' : ''}" id="btn-link-l" onclick="toggleLink('L'); saveToLocal(); calculateArea();">${linkIcon}</button>
                     ${createInputBox('l2', 'ਲੰਬਾਈ 2', 'L', 2)}
                 </div>
                 <div class="input-row">
                     ${createInputBox('w1', 'ਚੌੜਾਈ 1', 'W', 1)}
-                    <button class="link-btn ${linkW ? 'active' : ''}" id="btn-link-w" onclick="toggleLink('W'); saveToLocal()">${linkIcon}</button>
+                    <button class="link-btn ${linkW ? 'active' : ''}" id="btn-link-w" onclick="toggleLink('W'); saveToLocal(); calculateArea();">${linkIcon}</button>
                     ${createInputBox('w2', 'ਚੌੜਾਈ 2', 'W', 2)}
                 </div>
             `;
@@ -673,6 +516,7 @@
         }
 
         updateInputUnitLabels();
+        if(isPreviewActive) drawPreview();
     }
 
     function toggleLink(type) {
@@ -691,18 +535,24 @@
         if (type === 'L' && linkL) {
             let from = source === 1 ? 'l1' : 'l2';
             let to = source === 1 ? 'l2' : 'l1';
-            document.getElementById(to).value = document.getElementById(from).value;
-            document.getElementById('sel_' + to).value = document.getElementById('sel_' + from).value;
-            toggleExtra(to);
-            document.getElementById('ext_' + to).value = document.getElementById('ext_' + from).value;
+            let fEl = document.getElementById(from);
+            if(fEl) {
+                document.getElementById(to).value = fEl.value;
+                document.getElementById('sel_' + to).value = document.getElementById('sel_' + from).value;
+                toggleExtra(to);
+                document.getElementById('ext_' + to).value = document.getElementById('ext_' + from).value;
+            }
         }
         if (type === 'W' && linkW) {
             let from = source === 1 ? 'w1' : 'w2';
             let to = source === 1 ? 'w2' : 'w1';
-            document.getElementById(to).value = document.getElementById(from).value;
-            document.getElementById('sel_' + to).value = document.getElementById('sel_' + from).value;
-            toggleExtra(to);
-            document.getElementById('ext_' + to).value = document.getElementById('ext_' + from).value;
+            let fEl = document.getElementById(from);
+            if(fEl) {
+                document.getElementById(to).value = fEl.value;
+                document.getElementById('sel_' + to).value = document.getElementById('sel_' + from).value;
+                toggleExtra(to);
+                document.getElementById('ext_' + to).value = document.getElementById('ext_' + from).value;
+            }
         }
     }
 
@@ -741,7 +591,12 @@
 
     function toggleKaramSetup() {
         const unit = document.getElementById('main-unit').value;
-        document.getElementById('karam-settings').style.display = (unit === 'karam') ? 'block' : 'none';
+        const karamSet = document.getElementById('karam-settings');
+        if (unit === 'karam') {
+            if(!isPreviewActive) karamSet.style.display = 'block';
+        } else {
+            karamSet.style.display = 'none';
+        }
         updateInputUnitLabels();
     }
 
@@ -812,7 +667,6 @@
     }
 
     function clearData() {
-        // ਇਹ ਫੰਕਸ਼ਨ ਸਿਰਫ਼ ਭਰੇ ਹੋਏ ਡਾਟੇ ਨੂੰ ਕਲੀਅਰ ਕਰੇਗਾ, ਸੈਟਿੰਗ ਉਹੀ ਰਹੇਗੀ
         if(confirm("ਕੀ ਤੁਸੀਂ ਸਿਰਫ਼ ਭਰਿਆ ਹੋਇਆ ਡਾਟਾ ਕਲੀਅਰ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?")) {
             const inputs = document.querySelectorAll('#inputs-container input[type="number"]');
             inputs.forEach(inp => inp.value = '');
@@ -825,10 +679,10 @@
             
             document.getElementById('result-box').style.display = 'none';
             saveToLocal();
+            
+            if(isPreviewActive) togglePreview(); 
         }
     }
-
-    document.addEventListener('input', saveToLocal);
 
     function getMultiplierToFeet() {
         const unit = document.getElementById('main-unit').value;
@@ -845,7 +699,9 @@
     }
 
     function getSideTotalFeet(id, mainMult) {
-        let baseVal = parseFloat(document.getElementById(id).value) || 0;
+        let el = document.getElementById(id);
+        if(!el) return 0;
+        let baseVal = parseFloat(el.value) || 0;
         let totalFeet = baseVal * mainMult;
         
         let selVal = document.getElementById('sel_' + id).value;
@@ -860,6 +716,7 @@
     }
 
     function calculateArea() {
+        if(!isLoaded) return;
         const shape = document.querySelector('input[name="shape"]:checked').value;
         const mult = getMultiplierToFeet();
         let areaSqFt = 0;
@@ -870,6 +727,11 @@
             const w1 = getSideTotalFeet('w1', mult);
             const w2 = getSideTotalFeet('w2', mult);
             
+            if(l1==0 && l2==0 && w1==0 && w2==0) {
+                document.getElementById('result-box').style.display = 'none';
+                return;
+            }
+            
             const avgLength = (l1 + l2) / 2;
             const avgWidth = (w1 + w2) / 2;
             areaSqFt = avgLength * avgWidth;
@@ -878,16 +740,25 @@
             const s2 = getSideTotalFeet('s2', mult);
             const s3 = getSideTotalFeet('s3', mult);
             
+            if(s1==0 && s2==0 && s3==0) {
+                document.getElementById('result-box').style.display = 'none';
+                return;
+            }
+            
             if(s1 + s2 > s3 && s2 + s3 > s1 && s1 + s3 > s2) {
                 const s = (s1 + s2 + s3) / 2;
                 areaSqFt = Math.sqrt(s * (s - s1) * (s - s2) * (s - s3));
             } else {
-                alert("ਗਲਤ ਮਾਪ! ਇਹਨਾਂ ਭੁਜਾਵਾਂ ਨਾਲ ਤਿਕੋਣ ਨਹੀਂ ਬਣ ਸਕਦੀ।");
+                document.getElementById('result-box').style.display = 'none';
                 return;
             }
         }
 
-        displayResults(areaSqFt);
+        if(areaSqFt > 0) {
+            displayResults(areaSqFt);
+        } else {
+            document.getElementById('result-box').style.display = 'none';
+        }
     }
 
     function formatValue(val) {
@@ -909,11 +780,8 @@
         const remKanals = Math.floor(totalKanals % rules.kanalPerKilla);
         const remMarlas = Math.floor(totalMarlas % rules.marlaPerKanal);
         
-        // Exact remaining SqFt calculation without reverse-rounding errors
         const extraSqFtAfterMarlas = sqFt % rules.marlaSqFt;
         const remSarsahisVal = (extraSqFtAfterMarlas / sarsahiSqFt).toFixed(2);
-
-        // Show EXACT square feet directly in bracket
         const sarsahiSqFtStr = extraSqFtAfterMarlas > 0.005 ? `(${extraSqFtAfterMarlas.toFixed(2)} ਵਰਗ ਫੁੱਟ)` : '';
 
         const onlyKanals = Math.floor(totalKanals);
@@ -979,17 +847,152 @@
         document.getElementById('result-box').style.display = 'block';
     }
 
-    // Modal Control Functions
+    function togglePreview() {
+        isPreviewActive = !isPreviewActive;
+        const btn = document.getElementById('preview-toggle-btn');
+        const inputs = document.getElementById('inputs-container');
+        const preview = document.getElementById('preview-container');
+        const karam = document.getElementById('karam-settings');
+        
+        if (isPreviewActive) {
+            btn.textContent = 'ਪ੍ਰੀਵਿਊ ਬੰਦ ਕਰੋ';
+            btn.classList.add('cancel-preview');
+            inputs.style.display = 'none';
+            if(karam) karam.style.display = 'none';
+            preview.style.display = 'block';
+            drawPreview();
+        } else {
+            btn.textContent = 'ਪ੍ਰੀਵਿਊ';
+            btn.classList.remove('cancel-preview');
+            inputs.style.display = 'block';
+            toggleKaramSetup(); 
+            preview.style.display = 'none';
+        }
+    }
+
+    function drawPreview() {
+        const previewContainer = document.getElementById('preview-svg-container');
+        previewContainer.innerHTML = ''; 
+
+        const shape = document.querySelector('input[name="shape"]:checked').value;
+        const mult = getMultiplierToFeet();
+
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 300 300");
+        svg.style.width = "100%";
+        svg.style.height = "250px";
+
+        const getLabel = (id) => {
+            let el = document.getElementById(id);
+            if(!el) return '0';
+            let v = el.value;
+            if(!v) v = "0";
+            let unitSel = document.getElementById('main-unit');
+            let u = unitSel.options[unitSel.selectedIndex].text;
+            let sel = document.getElementById('sel_'+id);
+            let ext = document.getElementById('ext_'+id);
+            if(sel && sel.value && ext && ext.value) {
+                let map = {'inch':'ਇੰਚ', 'cm':'ਸੈਂ.ਮੀ'};
+                return `${v} ${u} + ${ext.value} ${map[sel.value]}`;
+            }
+            return `${v} ${u}`;
+        };
+
+        const addText = (text, x, y, anchor="middle") => {
+            let t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            t.setAttribute("x", x);
+            t.setAttribute("y", y);
+            t.setAttribute("text-anchor", anchor);
+            t.setAttribute("fill", "#222");
+            t.setAttribute("font-size", "14px");
+            t.setAttribute("font-weight", "bold");
+            t.textContent = text;
+            svg.appendChild(t);
+        };
+
+        if (shape === '4') {
+            let l1 = getSideTotalFeet('l1', mult) || 0.1;
+            let l2 = getSideTotalFeet('l2', mult) || 0.1;
+            let w1 = getSideTotalFeet('w1', mult) || 0.1;
+            let w2 = getSideTotalFeet('w2', mult) || 0.1;
+
+            let avgL = (l1 + l2) / 2;
+            let avgW = (w1 + w2) / 2;
+
+            let maxDim = Math.max(avgL, avgW);
+            let scale = 160 / maxDim;
+
+            let drawW = avgL * scale;
+            let drawH = avgW * scale;
+
+            let startX = (300 - drawW) / 2;
+            let startY = (300 - drawH) / 2;
+
+            let rect = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            rect.setAttribute("points", `${startX},${startY} ${startX+drawW},${startY} ${startX+drawW},${startY+drawH} ${startX},${startY+drawH}`);
+            rect.setAttribute("fill", "var(--primary-light)");
+            rect.setAttribute("stroke", "var(--primary)");
+            rect.setAttribute("stroke-width", "3");
+            svg.appendChild(rect);
+
+            addText(getLabel('l1'), 150, startY - 12); 
+            addText(getLabel('l2'), 150, startY + drawH + 22); 
+            
+            addText(getLabel('w1'), startX - 8, 150 + 5, "end"); 
+            addText(getLabel('w2'), startX + drawW + 8, 150 + 5, "start"); 
+
+        } else { 
+            let s1 = getSideTotalFeet('s1', mult) || 0.1;
+            let s2 = getSideTotalFeet('s2', mult) || 0.1;
+            let s3 = getSideTotalFeet('s3', mult) || 0.1;
+
+            if (s1 + s2 > s3 && s2 + s3 > s1 && s1 + s3 > s2) {
+                let x = (s1*s1 + s3*s3 - s2*s2) / (2 * s1);
+                let y = Math.sqrt(s3*s3 - x*x);
+
+                let minX = Math.min(0, s1, x);
+                let maxX = Math.max(0, s1, x);
+                
+                let width = maxX - minX;
+                let height = y;
+
+                let scale = 160 / Math.max(width, height);
+
+                let drawW = width * scale;
+                let drawH = height * scale;
+                
+                let startX = (300 - drawW) / 2 - (minX * scale);
+                let startY = (300 - drawH) / 2;
+
+                let pt1 = `${startX}, ${startY + drawH}`; 
+                let pt2 = `${startX + s1*scale}, ${startY + drawH}`; 
+                let pt3 = `${startX + x*scale}, ${startY}`; 
+
+                let tri = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                tri.setAttribute("points", `${pt1} ${pt2} ${pt3}`);
+                tri.setAttribute("fill", "var(--primary-light)");
+                tri.setAttribute("stroke", "var(--primary)");
+                tri.setAttribute("stroke-width", "3");
+                svg.appendChild(tri);
+
+                addText(getLabel('s1'), startX + (s1*scale)/2, startY + drawH + 22); 
+                addText(getLabel('s2'), startX + ((s1+x)*scale)/2 + 8, startY + drawH/2, "start"); 
+                addText(getLabel('s3'), startX + (x*scale)/2 - 8, startY + drawH/2, "end"); 
+            } else {
+                addText("ਗਲਤ ਮਾਪ! ਤਿਕੋਣ ਨਹੀਂ ਬਣ ਸਕਦੀ।", 150, 150);
+            }
+        }
+        previewContainer.appendChild(svg);
+    }
+
     function openPrompt() {
         document.getElementById('custom-prompt').style.display = 'flex';
         document.getElementById('prompt-input').value = '';
         document.getElementById('prompt-input').focus();
     }
-
     function closePrompt() {
         document.getElementById('custom-prompt').style.display = 'none';
     }
-
     function confirmPrompt() {
         let customHeader = document.getElementById('prompt-input').value;
         closePrompt();
@@ -998,12 +1001,8 @@
 
     function processDownload(customHeader) {
         let headerText = customHeader.trim() !== "" ? customHeader : "ਮਿਣਤੀ ਦਾ ਵੇਰਵਾ";
-        
-        // Create filename based on header text
         let safeFileName = headerText.trim().replace(/[/\\?%*:|"<>]/g, '-');
         if(!safeFileName) safeFileName = 'Land-Measurement';
-        
-        calculateArea(); 
         
         const shape = document.querySelector('input[name="shape"]:checked').value;
         const mainUnitVal = document.getElementById('main-unit').value;
@@ -1013,8 +1012,9 @@
 
         let inputsHTML = '';
         const formatInp = (id, label) => {
-            let val = document.getElementById(id).value;
-            if(!val) val = '0';
+            let el = document.getElementById(id);
+            if(!el) return '';
+            let val = el.value || '0';
             let str = `<span class="receipt-hl">${val}</span> ${mUnit}`;
             
             let extSel = document.getElementById('sel_'+id);
@@ -1083,8 +1083,7 @@
                 <div class="receipt-res-line"><b>7.</b> &nbsp;&nbsp;ਹੈਕਟੇਅਰ: <span class="receipt-hl">${resData.hectare}</span></div>
             </div>
             
-            <!-- Developer details appended here -->
-            <div class="dev-footer">
+            <div class="dev-receipt-footer">
                 ਸੌਫਟਵੇਅਰ ਬਣਾਇਆ ਗਿਆ - ਸ: ਇੰਦਰਜੀਤ ਸਿੰਘ ਤਲਵੰਡੀ ਸਾਬੋ<br>
                 ਫੀਡਬੈਕ ਫੌਨ ਨੰਬਰ - 94644-91806
             </div>
@@ -1093,11 +1092,7 @@
         const printArea = document.getElementById('receipt-container');
         printArea.innerHTML = receiptHTML;
 
-        html2canvas(printArea, {
-            scale: 2, 
-            backgroundColor: "#ffffff",
-            useCORS: true
-        }).then(canvas => {
+        html2canvas(printArea, { scale: 2, backgroundColor: "#ffffff", useCORS: true }).then(canvas => {
             let link = document.createElement('a');
             link.download = safeFileName + '.jpg'; 
             link.href = canvas.toDataURL('image/jpeg', 0.9);
@@ -1106,31 +1101,33 @@
     }
 
     function initApp() {
-        // Clear all saved data on Page Reload to strictly revert to defaults
-        localStorage.clear();
-
-        currentMeasurement = 'rural';
-        document.getElementById('rural-tab').classList.add('active');
-        document.getElementById('urban-tab').classList.remove('active');
-        
-        let urbanNote = document.getElementById('urban-note');
-        if (urbanNote) {
-            urbanNote.style.display = 'none';
+        if (!localStorage.getItem('firstLoadv24')) {
+            localStorage.clear();
+            localStorage.setItem('firstLoadv24', 'done');
         }
 
-        document.getElementById('four-sides').checked = true;
-        document.getElementById('main-unit').value = 'foot';
+        currentMeasurement = localStorage.getItem('landMeasurementMode') || 'rural';
+        document.getElementById('rural-tab').classList.toggle('active', currentMeasurement === 'rural');
+        document.getElementById('urban-tab').classList.toggle('active', currentMeasurement === 'urban');
         
-        isLoaded = false;
-        linkL = false;
-        linkW = false;
-        currentKaramUnit = 'foot';
+        if (currentMeasurement === 'urban') {
+            document.body.classList.add('urban-theme');
+            document.getElementById('theme-meta').setAttribute('content', '#9C27B0');
+        } else {
+            document.body.classList.remove('urban-theme');
+            document.getElementById('theme-meta').setAttribute('content', '#4CAF50');
+        }
+
+        let urbanNote = document.getElementById('urban-note');
+        if (urbanNote) urbanNote.style.display = currentMeasurement === 'urban' ? 'block' : 'none';
+
+        if (!localStorage.getItem(storageKey())) {
+            document.getElementById('four-sides').checked = true;
+        }
         
-        toggleInputs();
+        loadFromLocal();
         updateInputUnitLabels();
-        toggleKaramSetup();
-        
-        isLoaded = true;
+        calculateArea(); 
     }
 
     if (document.readyState === 'loading') {
@@ -1138,8 +1135,6 @@
     } else {
         initApp();
     }
-    // Ensures cleanup on refresh
-    window.addEventListener('load', initApp);
 </script>
 
 </body>
